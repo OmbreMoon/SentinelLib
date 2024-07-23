@@ -1,4 +1,4 @@
-package com.ombremoon.tugkansem.common.sentinel;
+package com.ombremoon.sentinellib.common;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageType;
@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class SentinelBox {
+    private final String name;
     private final AABB aabb;
     private final Vec3 boxOffset;
     private final Function<Entity, Integer> duration;
@@ -22,7 +23,8 @@ public class SentinelBox {
     private final ResourceKey<DamageType> damageType;
     private final float damageAmount;
 
-    public SentinelBox(AABB aabb, Vec3 boxOffset, Function<Entity, Integer> duration, BiPredicate<Entity, Integer> activeDuration, Predicate<LivingEntity> attackCondition, Consumer<LivingEntity> attackConsumer, ResourceKey<DamageType> damageType, float damageAmount) {
+    public SentinelBox(String name, AABB aabb, Vec3 boxOffset, Function<Entity, Integer> duration, BiPredicate<Entity, Integer> activeDuration, Predicate<LivingEntity> attackCondition, Consumer<LivingEntity> attackConsumer, ResourceKey<DamageType> damageType, float damageAmount) {
+        this.name = name;
         this.aabb = aabb;
         this.boxOffset = boxOffset;
         this.duration = duration;
@@ -31,6 +33,10 @@ public class SentinelBox {
         this.attackConsumer = attackConsumer;
         this.damageType = damageType;
         this.damageAmount = damageAmount;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public AABB getSentinelBox() {
@@ -66,6 +72,7 @@ public class SentinelBox {
     }
 
     public static class Builder {
+        private final String name;
         private AABB aabb;
         private Vec3 boxOffset;
         private Function<Entity, Integer> duration = entity -> 30;
@@ -75,11 +82,11 @@ public class SentinelBox {
         private ResourceKey<DamageType> damageType;
         private float damageAmount;
 
-        public Builder() {
-
+        public Builder(String name) {
+            this.name = name;
         }
 
-        public static Builder of() { return new Builder(); }
+        public static Builder of(String name) { return new Builder(name); }
 
         public Builder sizeAndOffset(float xPos, float xOffset, float yOffset, float zOffset) {
             sizeAndOffset(xPos, xPos, xOffset, yOffset, zOffset);
@@ -127,7 +134,7 @@ public class SentinelBox {
         }
 
         public SentinelBox build() {
-            return new SentinelBox(this.aabb, this.boxOffset, this.duration, this.activeDuration, this.attackCondition, this.attackConsumer, this.damageType, this.damageAmount);
+            return new SentinelBox(this.name, this.aabb, this.boxOffset, this.duration, this.activeDuration, this.attackCondition, this.attackConsumer, this.damageType, this.damageAmount);
         }
     }
 }

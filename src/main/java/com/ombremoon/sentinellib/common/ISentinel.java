@@ -1,9 +1,8 @@
-package com.ombremoon.tugkansem.common.sentinel;
+package com.ombremoon.sentinellib.common;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.datafixers.util.Pair;
-import com.ombremoon.tugkansem.network.ModNetworking;
+import com.ombremoon.sentinellib.networking.ModNetworking;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -14,7 +13,7 @@ public interface ISentinel {
 
     BoxInstanceManager getBoxManager();
 
-    List<Pair<String, SentinelBox>> registerBoxes();
+    List<SentinelBox> getSentinelBoxes();
 
     default void triggerSentinelBox(SentinelBox sentinelBox) {
         Entity entity = getSentinel();
@@ -22,7 +21,7 @@ public interface ISentinel {
             getBoxManager().addInstance(sentinelBox);
         } else {
             if (getBoxManager().addInstance(sentinelBox)) {
-                ModNetworking.triggerSentinelBox(entity.getId(), getIDFromBox(sentinelBox));
+                ModNetworking.triggerSentinelBox(entity.getId(), sentinelBox.getName());
             }
         }
     }
@@ -33,7 +32,7 @@ public interface ISentinel {
             getBoxManager().removeInstance(sentinelBox);
         } else {
             if (getBoxManager().removeInstance(sentinelBox)) {
-                ModNetworking.removeSentinelBox(entity.getId(), getIDFromBox(sentinelBox));
+                ModNetworking.removeSentinelBox(entity.getId(), sentinelBox.getName());
             }
         }
     }
@@ -43,20 +42,20 @@ public interface ISentinel {
     }
 
     default SentinelBox getBoxFromID(String boxID) {
-        for (var boxPair : registerBoxes()) {
-            if (boxPair.getFirst().equalsIgnoreCase(boxID))
-                return boxPair.getSecond();
+        for (SentinelBox sentinelBox : getSentinelBoxes()) {
+            if (sentinelBox.getName().equalsIgnoreCase(boxID))
+                return sentinelBox;
         }
         return null;
     }
 
-    default String getIDFromBox(SentinelBox sentinelBox) {
-        for (var boxPair : registerBoxes()) {
-            if (boxPair.getSecond() == sentinelBox)
-                return boxPair.getFirst();
+/*    default String getIDFromBox(SentinelBox sentinelBox) {
+        for (SentinelBox box : getSentinelBoxes()) {
+            if (box== sentinelBox)
+                return box.getName();
         }
         return "";
-    }
+    }*/
 
     default Entity getSentinel() {
         return (Entity) this;

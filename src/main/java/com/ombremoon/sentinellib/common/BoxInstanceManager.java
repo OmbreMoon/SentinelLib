@@ -1,10 +1,13 @@
-package com.ombremoon.tugkansem.common.sentinel;
+package com.ombremoon.sentinellib.common;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.util.List;
+import java.util.Map;
 
 public class BoxInstanceManager {
+    private final Map<String, SentinelBox> boxCache = new Object2ObjectOpenHashMap<>();
     private final List<BoxInstance> instances = new ObjectArrayList<>();
     private final ISentinel sentinel;
 

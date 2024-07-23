@@ -1,6 +1,6 @@
-package com.ombremoon.tugkansem.common.sentinel;
+package com.ombremoon.sentinellib.common;
 
-import com.ombremoon.tugkansem.Constants;
+import com.ombremoon.sentinellib.Constants;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;

@@ -1,7 +1,6 @@
-package com.ombremoon.tugkansem.network;
+package com.ombremoon.sentinellib.networking;
 
-
-import com.ombremoon.tugkansem.CommonClass;
+import com.ombremoon.sentinellib.CommonClass;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
@@ -19,10 +18,15 @@ public class ModNetworking {
         sendToClients(new ClientboundRemoveSentinelBox(entityID, boxID));
     }
 
+    public static void registerSentinelBox(int entityID, String boxID) {
+        sendToClients(new ClientboundRegisterSentinelBox(entityID, boxID));
+    }
+
     public static void registerPackets() {
         var id = 0;
         PACKET_CHANNEL.registerMessage(id++, ClientboundTriggerSentinelBox.class, ClientboundTriggerSentinelBox::encode, ClientboundTriggerSentinelBox::new, ClientboundTriggerSentinelBox::handle);
         PACKET_CHANNEL.registerMessage(id++, ClientboundRemoveSentinelBox.class, ClientboundRemoveSentinelBox::encode, ClientboundRemoveSentinelBox::new, ClientboundRemoveSentinelBox::handle);
+        PACKET_CHANNEL.registerMessage(id++, ClientboundRegisterSentinelBox.class, ClientboundRegisterSentinelBox::encode, ClientboundRegisterSentinelBox::new, ClientboundRegisterSentinelBox::handle);
     }
 
     protected <MSG> void sendToServer(MSG message) {

@@ -1,17 +1,16 @@
-package com.ombremoon.tugkansem;
+package com.ombremoon.sentinellib;
 
-import com.ombremoon.tugkansem.common.init.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.loading.FMLLoader;
 
 public class CommonClass {
 
     public static void init(IEventBus modEventBus) {
-        ItemInit.register(modEventBus);
-        BlockInit.register(modEventBus);
-        EntityInit.register(modEventBus);
-        ParticleInit.register(modEventBus);
-        MemoryTypeInit.init();
+    }
+
+    public static boolean isDevEnv() {
+        return !FMLLoader.isProduction();
     }
 
     public static ResourceLocation customLocation(String name) {
