@@ -18,15 +18,10 @@ public class ModNetworking {
         sendToClients(new ClientboundRemoveSentinelBox(entityID, boxID));
     }
 
-    public static void registerSentinelBox(int entityID, String boxID) {
-        sendToClients(new ClientboundRegisterSentinelBox(entityID, boxID));
-    }
-
     public static void registerPackets() {
         var id = 0;
         PACKET_CHANNEL.registerMessage(id++, ClientboundTriggerSentinelBox.class, ClientboundTriggerSentinelBox::encode, ClientboundTriggerSentinelBox::new, ClientboundTriggerSentinelBox::handle);
         PACKET_CHANNEL.registerMessage(id++, ClientboundRemoveSentinelBox.class, ClientboundRemoveSentinelBox::encode, ClientboundRemoveSentinelBox::new, ClientboundRemoveSentinelBox::handle);
-        PACKET_CHANNEL.registerMessage(id++, ClientboundRegisterSentinelBox.class, ClientboundRegisterSentinelBox::encode, ClientboundRegisterSentinelBox::new, ClientboundRegisterSentinelBox::handle);
     }
 
     protected <MSG> void sendToServer(MSG message) {

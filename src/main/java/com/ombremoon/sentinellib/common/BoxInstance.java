@@ -1,50 +1,65 @@
 package com.ombremoon.sentinellib.common;
 
 import com.ombremoon.sentinellib.Constants;
+import com.ombremoon.sentinellib.util.BoxUtil;
+import com.ombremoon.sentinellib.util.MatrixHelper;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class BoxInstance {
     private final SentinelBox sentinelBox;
-    private final Entity boxOwner;
-    private final List<LivingEntity> hurtEntities = new ObjectArrayList<>();
+    private final LivingEntity boxOwner;
     private boolean isActive;
     private int tickCount = 0;
+    private Vec3 centerVec;
+    protected Vec3[] instanceVertices;
+    protected Vec3[] instanceNormals;
+    public final List<LivingEntity> hurtEntities = new ObjectArrayList<>();
 
-    public BoxInstance(SentinelBox sentinelBox, Entity boxOwner) {
+
+    public BoxInstance(@Nullable SentinelBox sentinelBox, LivingEntity boxOwner) {
         this.sentinelBox = sentinelBox;
         this.boxOwner = boxOwner;
+        this.centerVec = new Vec3(0.0F, 0.0F, 0.0F);
+        this.instanceVertices = new Vec3[]{new Vec3(0.0F, 0.0F, 0.0F), new Vec3(0.0F, 0.0F, 0.0F), new Vec3(0.0F, 0.0F, 0.0F), new Vec3(0.0F, 0.0F, 0.0F)};
+        this.instanceNormals = new Vec3[]{new Vec3(0.0F, 0.0F, 0.0F), new Vec3(0.0F, 0.0F, 0.0F), new Vec3(0.0F, 0.0F, 0.0F)};
     }
 
+    public BoxInstance(LivingEntity entity) {
+        this(null, entity);
+        AABB aabb = entity.getBoundingBox();
+        double xSize = (aabb.maxX - aabb.minX) / 2;
+        double ySize = (aabb.maxY - aabb.minY) / 2;
+        double zSize = (aabb.maxZ - aabb.minZ) / 2;
+        this.centerVec = new Vec3(-((float)aabb.minX + xSize), (float)aabb.minY + ySize, -((float)aabb.minZ + zSize));
+        this.instanceVertices = new Vec3[]{new Vec3(-xSize, ySize, -zSize), new Vec3(-xSize, ySize, zSize), new Vec3(xSize, ySize, zSize), new Vec3(xSize, ySize, -zSize)};
+        this.instanceNormals = new Vec3[]{new Vec3(1.0F, 0.0F, 0.0F), new Vec3(0.0F, 1.0F, 0.0F), new Vec3(0.0F, 0.0F, 1.0F)};
+    }
+
+    @Nullable
     public SentinelBox getSentinelBox() {
         return this.sentinelBox;
     }
 
-    public Entity getBoxOwner() {
+    public LivingEntity getBoxOwner() {
         return this.boxOwner;
-    }
-
-    public AABB getSentinelBB() {
-        return getSentinelBB(0.1F);
-    }
-
-    public AABB getSentinelBB(float partialTicks) {
-        return this.sentinelBox.getSentinelBox().move(getBoxPosition(this.boxOwner, partialTicks));
     }
 
     public boolean isActive() {
         return this.isActive;
+    }
+
+    public Vec3 getCenter() {
+        return this.centerVec;
     }
 
     public void tick() {
@@ -54,11 +69,14 @@ public class BoxInstance {
             return;
         }
 
-        int duration = this.sentinelBox.getDuration().apply(this.boxOwner);
+        int duration = this.sentinelBox.getDuration();
         if (this.tickCount <= duration) {
+            Matrix4f matrix4f = MatrixHelper.getEntityMatrix(this.boxOwner, 1.0F);
+            this.updatePositionAndRotation(matrix4f);
+
             if (this.sentinelBox.getActiveDuration().test(this.boxOwner, this.tickCount)) {
                 this.isActive = true;
-                this.checkEntityInside();
+                this.checkEntityInside(this.boxOwner);
             } else {
                 this.isActive = false;
             }
@@ -67,19 +85,19 @@ public class BoxInstance {
         }
     }
 
-    private void checkEntityInside() {
-        if (!this.boxOwner.level().isClientSide) {
-            List<Entity> entityList = this.boxOwner.level().getEntities(boxOwner, this.getSentinelBB());
+    public void checkEntityInside(LivingEntity owner) {
+        if (!owner.level().isClientSide) {
+            List<Entity> entityList = sentinelBox.getEntityCollisions(owner, this);
             for (Entity entity : entityList) {
-                if (entity instanceof LivingEntity livingEntity) {
-                    if (this.sentinelBox.getAttackCondition().test(livingEntity)) {
-                        if (!hurtEntities.contains(livingEntity)) {
-                            this.sentinelBox.getAttackConsumer().accept(livingEntity);
-                            ResourceKey<DamageType> damageType = sentinelBox.getDamageType();
-                            if (damageType != null)
-                                livingEntity.hurt(sentinelDamageSource(livingEntity.level(), damageType, this.boxOwner), sentinelBox.getDamageAmount());
-                            hurtEntities.add(livingEntity);
-                        }
+                LivingEntity livingEntity = (LivingEntity) entity;
+                if (sentinelBox.getAttackCondition().test(livingEntity)) {
+                    if (!this.hurtEntities.contains(livingEntity)) {
+                        sentinelBox.getAttackConsumer().accept(livingEntity);
+                        ResourceKey<DamageType> damageType = sentinelBox.getDamageType();
+                        if (damageType != null)
+                            livingEntity.hurt(BoxUtil.sentinelDamageSource(livingEntity.level(), damageType, owner), sentinelBox.getDamageAmount());
+
+                        this.hurtEntities.add(livingEntity);
                     }
                 }
             }
@@ -87,41 +105,32 @@ public class BoxInstance {
         }
     }
 
-    private Vec3 getBoxPosition(Entity entity, float partialTicks) {
-        Vec3 pos = entity.getPosition(partialTicks);
-        Vec3 vec3 = getProperOffset(entity);
-        return new Vec3(pos.x + vec3.x, pos.y + vec3.y, pos.z + vec3.z);
-    }
-
-    public Vec3 getProperOffset(Entity entity) {
-        Vec3 vec = this.sentinelBox.getBoxOffset();
-        float xLookAngle = (-entity.getYHeadRot() + 90) * Mth.DEG_TO_RAD;
-        float zLookAngle = -entity.getYHeadRot() * Mth.DEG_TO_RAD;
-        Vec3 f = new Vec3(vec.z * Math.sin(zLookAngle), 0.0, vec.z * Math.cos(zLookAngle));
-        Vec3 f1 = new Vec3(vec.x * Math.sin(xLookAngle), 0.0, vec.x * Math.cos(xLookAngle));
-        return new Vec3(f.x + f1.x, vec.y, f.z + f1.z);
-    }
-
-    public Vec3 getCenter(float partialTicks) {
-        return this.getSentinelBB(partialTicks).getCenter();
-    }
-
     public void deactivateBox() {
         ((ISentinel)this.boxOwner).getBoxManager().removeInstance(this);
     }
 
-    public static DamageSource sentinelDamageSource(Level level, ResourceKey<DamageType> damageType, Entity attackEntity) {
-        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(damageType), attackEntity);
+    public void updatePositionAndRotation(Matrix4f matrix4f) {
+        Matrix4f correctMatrix = new Matrix4f(matrix4f);
+        correctMatrix.setTranslation(0.0F, 0.0F, 0.0F);
+
+        for (int i = 0; i < this.instanceVertices.length; i++) {
+            this.instanceVertices[i] = MatrixHelper.transform(correctMatrix, sentinelBox.getVertex(i));
+        }
+
+        for (int i = 0; i < this.instanceNormals.length; i++) {
+            this.instanceNormals[i] = MatrixHelper.transform(correctMatrix, sentinelBox.getNormal(i));
+        }
+
+        this.centerVec = MatrixHelper.transform(matrix4f, this.sentinelBox.getBoxOffset().multiply(-1.0F, 1.0F, -1.0F));
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
-        } else if (!(obj instanceof BoxInstance)) {
+        } else if (!(obj instanceof BoxInstance boxInstance)) {
             return false;
         } else {
-            BoxInstance boxInstance = (BoxInstance) obj;
             return this.sentinelBox == boxInstance.sentinelBox && this.boxOwner.getId() == boxInstance.boxOwner.getId();
         }
     }

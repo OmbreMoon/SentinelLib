@@ -1,5 +1,6 @@
-package com.ombremoon.sentinellib.common;
+package com.ombremoon.sentinellib.common.event;
 
+import com.ombremoon.sentinellib.common.SentinelBox;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;

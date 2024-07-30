@@ -1,53 +1,78 @@
 package com.ombremoon.sentinellib.common;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class SentinelBox {
+public abstract class SentinelBox {
+    protected final AABB aabb;
     private final String name;
-    private final AABB aabb;
+    private final Vec3 vertexPos;
     private final Vec3 boxOffset;
-    private final Function<Entity, Integer> duration;
+    private final int duration;
     private final BiPredicate<Entity, Integer> activeDuration;
     private final Predicate<LivingEntity> attackCondition;
     private final Consumer<LivingEntity> attackConsumer;
     private final ResourceKey<DamageType> damageType;
     private final float damageAmount;
+    private final Vec3[] vertices;
+    private final Vec3[] normals;
 
-    public SentinelBox(String name, AABB aabb, Vec3 boxOffset, Function<Entity, Integer> duration, BiPredicate<Entity, Integer> activeDuration, Predicate<LivingEntity> attackCondition, Consumer<LivingEntity> attackConsumer, ResourceKey<DamageType> damageType, float damageAmount) {
-        this.name = name;
-        this.aabb = aabb;
-        this.boxOffset = boxOffset;
-        this.duration = duration;
-        this.activeDuration = activeDuration;
-        this.attackCondition = attackCondition;
-        this.attackConsumer = attackConsumer;
-        this.damageType = damageType;
-        this.damageAmount = damageAmount;
+    public SentinelBox(Builder builder) {
+        this.aabb = builder.aabb;
+        this.name = builder.name;
+        this.vertexPos = builder.vertexPos;
+        this.boxOffset = builder.boxOffset;
+        this.duration = builder.duration;
+        this.activeDuration = builder.activeDuration;
+        this.attackCondition = builder.attackCondition;
+        this.attackConsumer = builder.attackConsumer;
+        this.damageType = builder.damageType;
+        this.damageAmount = builder.damageAmount;
+        this.vertices = new Vec3[]{new Vec3(vertexPos.x, vertexPos.y, -vertexPos.z), new Vec3(vertexPos.x, vertexPos.y, vertexPos.z), new Vec3(-vertexPos.x, vertexPos.y, vertexPos.z), new Vec3(-vertexPos.x, vertexPos.y, -vertexPos.z)};
+        this.normals = new Vec3[]{new Vec3(1.0F, 0.0F, 0.0F), new Vec3(0.0F, 1.0F, 0.0F), new Vec3(0.0F, 0.0F, -1.0F)};
     }
 
-    public String getName() {
-        return this.name;
+    public abstract AABB getSentinelBB(BoxInstance instance);
+
+    public abstract void renderBox(BoxInstance instance, LivingEntity entity, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, float isRed);
+
+    public abstract List<Entity> getEntityCollisions(LivingEntity owner, BoxInstance instance);
+
+    public Vec3 getVertex(int index) {
+        return this.vertices[index];
     }
 
-    public AABB getSentinelBox() {
+    public Vec3 getNormal(int index) {
+        return this.normals[index];
+    }
+
+    public String getName() { return this.name; }
+
+    public AABB getAABB() {
         return this.aabb;
+    }
+
+    public Vec3 getVertexPos() {
+        return this.vertexPos;
     }
 
     public Vec3 getBoxOffset() {
         return this.boxOffset;
     }
 
-    public Function<Entity, Integer> getDuration() {
+    public int getDuration() {
         return this.duration;
     }
 
@@ -71,70 +96,20 @@ public class SentinelBox {
         return this.damageAmount;
     }
 
-    public static class Builder {
-        private final String name;
-        private AABB aabb;
-        private Vec3 boxOffset;
-        private Function<Entity, Integer> duration = entity -> 30;
-        private BiPredicate<Entity, Integer> activeDuration = (entity, integer) -> true;
-        private Predicate<LivingEntity> attackCondition = livingEntity -> true;
-        private Consumer<LivingEntity> attackConsumer = livingEntity -> {};
-        private ResourceKey<DamageType> damageType;
-        private float damageAmount;
+    protected static class Builder {
+        protected final String name;
+        protected AABB aabb;
+        protected Vec3 boxOffset;
+        protected Vec3 vertexPos;
+        protected int duration = 30;
+        protected BiPredicate<Entity, Integer> activeDuration = (entity, integer) -> integer % 10 == 0;
+        protected Predicate<LivingEntity> attackCondition = livingEntity -> true;
+        protected Consumer<LivingEntity> attackConsumer = livingEntity -> {};
+        protected ResourceKey<DamageType> damageType;
+        protected float damageAmount;
 
-        public Builder(String name) {
+        protected Builder(String name) {
             this.name = name;
-        }
-
-        public static Builder of(String name) { return new Builder(name); }
-
-        public Builder sizeAndOffset(float xPos, float xOffset, float yOffset, float zOffset) {
-            sizeAndOffset(xPos, xPos, xOffset, yOffset, zOffset);
-            return this;
-        }
-
-        public Builder sizeAndOffset(float xPos, float yPos, float xOffset, float yOffset, float zOffset) {
-            sizeAndOffset(xPos, yPos, xPos, xOffset, yOffset, zOffset);
-            return this;
-        }
-
-        public Builder sizeAndOffset(float xPos, float yPos, float zPos, float xOffset, float yOffset, float zOffset) {
-            double xSize = Math.abs(xPos);
-            double ySize = Math.abs(yPos);
-            double zSize = Math.abs(zPos);
-            this.boxOffset = new Vec3(xOffset, yOffset, zOffset);
-            this.aabb = new AABB(xSize, ySize, zSize, -xSize, -ySize, -zSize);
-            return this;
-        }
-
-        public Builder boxDuration(Function<Entity, Integer> durationTicks) {
-            this.duration = durationTicks;
-            return this;
-        }
-
-        public Builder activeTicks(BiPredicate<Entity, Integer> activeDuration) {
-            this.activeDuration = activeDuration;
-            return this;
-        }
-
-        public Builder attackCondition(Predicate<LivingEntity> attackCondition) {
-            this.attackCondition = attackCondition;
-            return this;
-        }
-
-        public Builder attackConsumer(Consumer<LivingEntity> attackConsumer) {
-            this.attackConsumer = attackConsumer;
-            return this;
-        }
-
-        public Builder typeDamage(ResourceKey<DamageType> damageType, float damageAmount) {
-            this.damageType = damageType;
-            this.damageAmount = damageAmount;
-            return this;
-        }
-
-        public SentinelBox build() {
-            return new SentinelBox(this.name, this.aabb, this.boxOffset, this.duration, this.activeDuration, this.attackCondition, this.attackConsumer, this.damageType, this.damageAmount);
         }
     }
 }

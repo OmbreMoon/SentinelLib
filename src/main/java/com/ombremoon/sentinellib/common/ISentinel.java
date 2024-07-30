@@ -1,11 +1,8 @@
 package com.ombremoon.sentinellib.common;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ombremoon.sentinellib.networking.ModNetworking;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.List;
 
@@ -49,24 +46,7 @@ public interface ISentinel {
         return null;
     }
 
-/*    default String getIDFromBox(SentinelBox sentinelBox) {
-        for (SentinelBox box : getSentinelBoxes()) {
-            if (box== sentinelBox)
-                return box.getName();
-        }
-        return "";
-    }*/
-
-    default Entity getSentinel() {
-        return (Entity) this;
-    }
-
-    default void renderBox(BoxInstance instance, Entity entity, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks) {
-        poseStack.pushPose();
-        float activeColor = instance.isActive() ? 0.0F : 1.0F;
-        Vec3 center = instance.getCenter(partialTicks);
-        Vec3 vec3 = instance.getProperOffset(entity);
-        LevelRenderer.renderLineBox(poseStack, vertexConsumer, instance.getSentinelBB(partialTicks).move(-center.x + vec3.x, -center.y + vec3.y, -center.z + vec3.z), 1.0F, activeColor, activeColor, 1.0F);
-        poseStack.popPose();
+    default LivingEntity getSentinel() {
+        return (LivingEntity) this;
     }
 }
