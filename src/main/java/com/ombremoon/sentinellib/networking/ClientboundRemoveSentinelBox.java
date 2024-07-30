@@ -1,7 +1,7 @@
 package com.ombremoon.sentinellib.networking;
 
 import com.ombremoon.sentinellib.common.ISentinel;
-import com.ombremoon.sentinellib.common.SentinelBox;
+import com.ombremoon.sentinellib.api.box.SentinelBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;

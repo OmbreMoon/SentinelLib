@@ -1,7 +1,8 @@
-package com.ombremoon.sentinellib.common;
+package com.ombremoon.sentinellib.api.box;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.ombremoon.sentinellib.common.ISentinel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
@@ -10,13 +11,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
 
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * An AABB based sentinel box, similar to the vanilla bounding boxes.<br> Should be used for stationary boxes that are centered around the {@link ISentinel Sentinel}.<br> Offset in the X-/Z- directions at your own risk.
+ */
 public class AABBSentinelBox extends SentinelBox {
 
     public AABBSentinelBox(Builder builder) {
@@ -31,11 +34,11 @@ public class AABBSentinelBox extends SentinelBox {
 
     public Vec3 getBoxPosition(Entity entity, float partialTicks) {
         Vec3 pos = entity.getPosition(partialTicks);
-        Vec3 vec3 = getProperOffset(entity);
+        Vec3 vec3 = getAABBOffset(entity);
         return new Vec3(pos.x + vec3.x, pos.y + vec3.y, pos.z + vec3.z);
     }
 
-    public Vec3 getProperOffset(Entity entity) {
+    public Vec3 getAABBOffset(Entity entity) {
         Vec3 vec = this.getBoxOffset();
         float xLookAngle = (-entity.getYHeadRot() + 90) * Mth.DEG_TO_RAD;
         float zLookAngle = -entity.getYHeadRot() * Mth.DEG_TO_RAD;
@@ -60,7 +63,7 @@ public class AABBSentinelBox extends SentinelBox {
     public void renderBox(BoxInstance instance, LivingEntity entity, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, float isRed) {
         poseStack.pushPose();
         Vec3 center = this.getCenter(entity, partialTicks);
-        Vec3 vec3 = this.getProperOffset(entity);
+        Vec3 vec3 = this.getAABBOffset(entity);
         LevelRenderer.renderLineBox(poseStack, vertexConsumer, this.getSentinelBB(entity, partialTicks).move(-center.x + vec3.x, -center.y + vec3.y, -center.z + vec3.z), 1.0F, isRed, isRed, 1.0F);
         poseStack.popPose();
     }
@@ -71,59 +74,106 @@ public class AABBSentinelBox extends SentinelBox {
 
     }
 
+    /**
+     * Builder pattern for AABB based sentinel boxes
+     */
     public static class Builder extends SentinelBox.Builder {
         public Builder(String name) {
             super(name);
         }
 
+        /**
+         * Creates a new builder
+         * @param name The name of the sentinel box
+         * @return The builder
+         */
         public static Builder of(String name) { return new Builder(name); }
-
-        public Builder sizeAndOffset(float xPos, float xOffset, float yOffset, float zOffset) {
-            sizeAndOffset(xPos, xPos, xOffset, yOffset, zOffset);
+        public Builder sizeAndOffset(float xSize, float xOffset, float yOffset, float zOffset) {
+            sizeAndOffset(xSize, xSize, xOffset, yOffset, zOffset);
             return this;
         }
 
-        public Builder sizeAndOffset(float xPos, float yPos, float xOffset, float yOffset, float zOffset) {
-            sizeAndOffset(xPos, yPos, xPos, xOffset, yOffset, zOffset);
+        public Builder sizeAndOffset(float xSize, float ySize, float xOffset, float yOffset, float zOffset) {
+            sizeAndOffset(xSize, ySize, xSize, xOffset, yOffset, zOffset);
             return this;
         }
 
-        public Builder sizeAndOffset(float xPos, float yPos, float zPos, float xOffset, float yOffset, float zOffset) {
-            double xSize = Math.abs(xPos);
-            double ySize = Math.abs(yPos);
-            double zSize = Math.abs(zPos);
-            this.vertexPos = new Vec3(xSize, ySize, zSize);
+        /**
+         * Defines the size and offset of the sentinel box.<br> It is highly recommended to <b><u>NOT</u></b> offset the x-/z- directions for AABB sentinel boxes.
+         * @param xSize Half of the x size
+         * @param ySize Half of the y size
+         * @param zSize Half of the z size
+         * @param xOffset The x offset
+         * @param yOffset The y offset
+         * @param zOffset The z offset
+         * @return The builder
+         */
+        public Builder sizeAndOffset(float xSize, float ySize, float zSize, float xOffset, float yOffset, float zOffset) {
+            double xVertex = Math.abs(xSize);
+            double yVertex = Math.abs(ySize);
+            double zVertex = Math.abs(zSize);
+            this.vertexPos = new Vec3(xVertex, yVertex, zVertex);
             this.boxOffset = new Vec3(xOffset, yOffset, zOffset);
-            this.aabb = new AABB(xSize, ySize, zSize, -xSize, -ySize, -zSize);
+            this.aabb = new AABB(xVertex, yVertex, zVertex, -xVertex, -yVertex, -zVertex);
             return this;
         }
 
+        /**
+         * Defines the duration the box should tick.
+         * @param durationTicks
+         * @return The builder
+         */
         public Builder boxDuration(int durationTicks) {
             this.duration = durationTicks;
             return this;
         }
 
+        /**
+         * Callback to define when the box should be active.
+         * @param activeDuration
+         * @return The builder
+         */
         public Builder activeTicks(BiPredicate<Entity, Integer> activeDuration) {
             this.activeDuration = activeDuration;
             return this;
         }
 
+        /**
+         * Callback to determine what entities should be affected by the box
+         * @param attackCondition
+         * @return The builder
+         */
         public Builder attackCondition(Predicate<LivingEntity> attackCondition) {
             this.attackCondition = attackCondition;
             return this;
         }
 
+        /**
+         * Callback to add extra functionality to the sentinel box while active
+         * @param attackConsumer
+         * @return
+         */
         public Builder attackConsumer(Consumer<LivingEntity> attackConsumer) {
             this.attackConsumer = attackConsumer;
             return this;
         }
 
+        /**
+         * Defines the damage type and amount the box causes while active
+         * @param damageType
+         * @param damageAmount
+         * @return The builder
+         */
         public Builder typeDamage(ResourceKey<DamageType> damageType, float damageAmount) {
             this.damageType = damageType;
             this.damageAmount = damageAmount;
             return this;
         }
 
+        /**
+         * Builds the Sentinel Box
+         * @return An AABBSentinelBox
+         */
         public AABBSentinelBox build() {
             return new AABBSentinelBox(this);
         }

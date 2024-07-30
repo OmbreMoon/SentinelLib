@@ -1,9 +1,9 @@
 package com.ombremoon.sentinellib;
 
-import com.ombremoon.sentinellib.common.BoxInstance;
+import com.ombremoon.sentinellib.api.box.BoxInstance;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.ISentinel;
-import com.ombremoon.sentinellib.common.OBBSentinelBox;
+import com.ombremoon.sentinellib.api.box.OBBSentinelBox;
 import com.ombremoon.sentinellib.common.event.RegisterPlayerSentinelBoxEvent;
 import com.ombremoon.sentinellib.networking.ModNetworking;
 import net.minecraft.client.Minecraft;

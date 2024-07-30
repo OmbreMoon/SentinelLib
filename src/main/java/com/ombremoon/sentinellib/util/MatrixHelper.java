@@ -7,8 +7,17 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+/**
+ * Utility class used primarily for OBB translations and rotations
+ */
 public class MatrixHelper {
 
+    /**
+     * Linear transformation of a 3D vector with a 4x4 matrix
+     * @param matrix4f The transformation matrix
+     * @param from The vector undergoing a transformation
+     * @return The transformed matrix
+     */
     public static Vec3 transform(Matrix4f matrix4f, Vec3 from) {
         double d0 = matrix4f.m00() * from.x + matrix4f.m10() * from.y + matrix4f.m20() * from.z + matrix4f.m30();
         double d1 = matrix4f.m01() * from.x + matrix4f.m11() * from.y + matrix4f.m21() * from.z + matrix4f.m31();
@@ -16,6 +25,12 @@ public class MatrixHelper {
         return new Vec3(d0, d1, d2);
     }
 
+    /**
+     * Returns a 4x4 matrix representing the position in space of an entity
+     * @param owner The entity providing the position
+     * @param partialTicks The time between ticks
+     * @return A 4x4 matrix translated and rotated to an entity's position
+     */
     public static Matrix4f getEntityMatrix(LivingEntity owner, float partialTicks) {
         Matrix4f matrix4f = new Matrix4f();
         Vec3 pos = owner.position();
@@ -24,6 +39,12 @@ public class MatrixHelper {
         return matrix4f;
     }
 
+    /**
+     * Returns a 4x4 matrix representing the yaw of an entity
+     * @param livingEntity The entity providing the look angle
+     * @param partialTicks The time between ticks
+     * @return An identity 4x4 matrix that has been rotated on the y-axis
+     */
     private static Matrix4f getEntityRotation(LivingEntity livingEntity, float partialTicks) {
         float yRot = livingEntity.level().isClientSide ? livingEntity.yHeadRot : -livingEntity.getYHeadRot();
         float yRot0 = livingEntity.level().isClientSide ? livingEntity.yHeadRotO : -livingEntity.getYHeadRot();
@@ -33,6 +54,11 @@ public class MatrixHelper {
         return matrix4f.rotate(yawAmount * Mth.DEG_TO_RAD, new Vector3f(0.0F, 1.0F, 0.0F));
     }
 
+    /**
+     * Returns a quaternion from a 4x4 matrix. Used for client rendering.
+     * @param matrix The rotated 4x4 matrix
+     * @return A quaternion used by the renderer
+     */
     public static Quaternionf quaternion(Matrix4f matrix) {
         float trace = matrix.m00() + matrix.m11() + matrix.m22();
         float f;

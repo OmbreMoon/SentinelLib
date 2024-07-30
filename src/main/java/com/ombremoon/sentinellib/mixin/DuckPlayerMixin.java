@@ -3,7 +3,7 @@ package com.ombremoon.sentinellib.mixin;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.IPlayerSentinel;
 import com.ombremoon.sentinellib.common.event.RegisterPlayerSentinelBoxEvent;
-import com.ombremoon.sentinellib.common.SentinelBox;
+import com.ombremoon.sentinellib.api.box.SentinelBox;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;

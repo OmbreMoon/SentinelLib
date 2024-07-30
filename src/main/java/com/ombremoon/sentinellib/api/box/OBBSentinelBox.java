@@ -1,10 +1,9 @@
-package com.ombremoon.sentinellib.common;
+package com.ombremoon.sentinellib.api.box;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.ombremoon.sentinellib.Constants;
+import com.ombremoon.sentinellib.common.ISentinel;
 import com.ombremoon.sentinellib.util.MatrixHelper;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
@@ -14,12 +13,14 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * An OBB based sentinel box, used for more dynamic functionality.<br> Can be offset, translated, and rotated based on the {@link ISentinel Sentinels'} needs.
+ */
 public class OBBSentinelBox extends SentinelBox {
     public OBBSentinelBox(Builder builder) {
         super(builder);
@@ -28,8 +29,7 @@ public class OBBSentinelBox extends SentinelBox {
     @Override
     public AABB getSentinelBB(BoxInstance instance) {
         Vec3 center = instance.getCenter();
-        AABB aabb1 = this.aabb.inflate(this.aabb.maxX - this.aabb.minX, this.aabb.maxY - this.aabb.minY, this.aabb.maxZ - this.aabb.minZ).move(-center.x, center.y, -center.z);
-        return aabb1;
+        return this.aabb.inflate(this.aabb.maxX - this.aabb.minX, this.aabb.maxY - this.aabb.minY, this.aabb.maxZ - this.aabb.minZ).move(-center.x, center.y, -center.z);
     }
 
     @Override
@@ -128,12 +128,20 @@ public class OBBSentinelBox extends SentinelBox {
         return !(MatrixHelper.project(distance, normal).length() > MatrixHelper.project(maxProj1, normal).length() + MatrixHelper.project(maxProj2, normal).length());
     }
 
+    /**
+     * Builder pattern for OBB based sentinel boxes
+     */
     public static class Builder extends SentinelBox.Builder {
 
         public Builder(String name) {
             super(name);
         }
 
+        /**
+         * Creates a new builder
+         * @param name The name of the sentinel box
+         * @return The builder
+         */
         public static Builder of(String name) { return new Builder(name); }
 
         public Builder sizeAndOffset(float xSize, float xOffset, float yOffset, float zOffset) {
@@ -146,6 +154,16 @@ public class OBBSentinelBox extends SentinelBox {
             return this;
         }
 
+        /**
+         * Defines the size and offset of the sentinel box.
+         * @param xSize Half of the x size
+         * @param ySize Half of the y size
+         * @param zSize Half of the z size
+         * @param xOffset The x offset
+         * @param yOffset The y offset
+         * @param zOffset The z offset
+         * @return The builder
+         */
         public Builder sizeAndOffset(float xSize, float ySize, float zSize, float xOffset, float yOffset, float zOffset) {
             double xVertex = Math.abs(xSize);
             double yVertex = Math.abs(ySize);
@@ -156,32 +174,62 @@ public class OBBSentinelBox extends SentinelBox {
             return this;
         }
 
+        /**
+         * Defines the duration the box should tick.
+         * @param durationTicks
+         * @return The builder
+         */
         public Builder boxDuration(int durationTicks) {
             this.duration = durationTicks;
             return this;
         }
 
+        /**
+         * Callback to define when the box should be active.
+         * @param activeDuration
+         * @return The builder
+         */
         public Builder activeTicks(BiPredicate<Entity, Integer> activeDuration) {
             this.activeDuration = activeDuration;
             return this;
         }
 
+        /**
+         * Callback to determine what entities should be affected by the box
+         * @param attackCondition
+         * @return The builder
+         */
         public Builder attackCondition(Predicate<LivingEntity> attackCondition) {
             this.attackCondition = attackCondition;
             return this;
         }
 
+        /**
+         * Callback to add extra functionality to the sentinel box while active
+         * @param attackConsumer
+         * @return
+         */
         public Builder attackConsumer(Consumer<LivingEntity> attackConsumer) {
             this.attackConsumer = attackConsumer;
             return this;
         }
 
+        /**
+         * Defines the damage type and amount the box causes while active
+         * @param damageType
+         * @param damageAmount
+         * @return The builder
+         */
         public Builder typeDamage(ResourceKey<DamageType> damageType, float damageAmount) {
             this.damageType = damageType;
             this.damageAmount = damageAmount;
             return this;
         }
 
+        /**
+         * Builds the Sentinel Box
+         * @return An AABBSentinelBox
+         */
         public OBBSentinelBox build() {
             return new OBBSentinelBox(this);
         }
