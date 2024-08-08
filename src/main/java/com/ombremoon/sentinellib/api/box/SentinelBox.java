@@ -10,8 +10,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -25,9 +25,11 @@ public abstract class SentinelBox {
     private final int duration;
     private final BiPredicate<Entity, Integer> activeDuration;
     private final Predicate<LivingEntity> attackCondition;
-    private final Consumer<LivingEntity> attackConsumer;
+    private final BiConsumer<LivingEntity, LivingEntity> attackConsumer;
     private final ResourceKey<DamageType> damageType;
     private final float damageAmount;
+    private final MoverType moverType;
+    private final boolean followsBody;
     private final Vec3[] vertices;
     private final Vec3[] normals;
 
@@ -42,6 +44,8 @@ public abstract class SentinelBox {
         this.attackConsumer = builder.attackConsumer;
         this.damageType = builder.damageType;
         this.damageAmount = builder.damageAmount;
+        this.moverType = builder.moverType;
+        this.followsBody = builder.followsBody;
         this.vertices = new Vec3[]{new Vec3(vertexPos.x, vertexPos.y, -vertexPos.z), new Vec3(vertexPos.x, vertexPos.y, vertexPos.z), new Vec3(-vertexPos.x, vertexPos.y, vertexPos.z), new Vec3(-vertexPos.x, vertexPos.y, -vertexPos.z)};
         this.normals = new Vec3[]{new Vec3(1.0F, 0.0F, 0.0F), new Vec3(0.0F, 1.0F, 0.0F), new Vec3(0.0F, 0.0F, -1.0F)};
     }
@@ -86,7 +90,7 @@ public abstract class SentinelBox {
         return this.attackCondition;
     }
 
-    public Consumer<LivingEntity> getAttackConsumer() {
+    public BiConsumer<LivingEntity, LivingEntity> getAttackConsumer() {
         return this.attackConsumer;
     }
 
@@ -98,6 +102,20 @@ public abstract class SentinelBox {
         return this.damageAmount;
     }
 
+    public MoverType getMoverType() {
+        return this.moverType;
+    }
+
+    public boolean isFollowsBody() {
+        return this.followsBody;
+    }
+
+    public enum MoverType {
+        HEAD,
+        BODY,
+        CUSTOM
+    }
+
     protected static class Builder {
         protected final String name;
         protected AABB aabb;
@@ -106,9 +124,11 @@ public abstract class SentinelBox {
         protected int duration = 30;
         protected BiPredicate<Entity, Integer> activeDuration = (entity, integer) -> integer % 10 == 0;
         protected Predicate<LivingEntity> attackCondition = livingEntity -> true;
-        protected Consumer<LivingEntity> attackConsumer = livingEntity -> {};
+        protected BiConsumer<LivingEntity, LivingEntity> attackConsumer = (attacker, target) -> {};
         protected ResourceKey<DamageType> damageType;
         protected float damageAmount;
+        protected MoverType moverType = MoverType.HEAD;
+        protected boolean followsBody;
 
         protected Builder(String name) {
             this.name = name;

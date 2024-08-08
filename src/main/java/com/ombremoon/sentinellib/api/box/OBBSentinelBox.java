@@ -2,6 +2,7 @@ package com.ombremoon.sentinellib.api.box;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.ombremoon.sentinellib.Constants;
 import com.ombremoon.sentinellib.common.ISentinel;
 import com.ombremoon.sentinellib.util.MatrixHelper;
 import net.minecraft.resources.ResourceKey;
@@ -14,8 +15,8 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -37,10 +38,10 @@ public class OBBSentinelBox extends SentinelBox {
         Matrix4f transpose = MatrixHelper.getEntityMatrix(entity, partialTicks);
         poseStack.pushPose();
         poseStack.mulPose(MatrixHelper.quaternion(transpose));
-        Matrix4f matrix = poseStack.last().pose();
+        Matrix4f matrix = poseStack.last().pose().translate(2.0F * (float) Math.sin(0.15F * instance.tickCount), 0, 2.0F * (float) Math.cos(0.15F * instance.tickCount));
         Matrix3f matrix3f = poseStack.last().normal();
-        Vec3 vertex = instance.getSentinelBox().getVertexPos();
-        Vec3 offset = instance.getSentinelBox().getBoxOffset();
+        Vec3 vertex = this.getVertexPos();
+        Vec3 offset = this.getBoxOffset();
         float maxX = (float)(offset.x + vertex.x);
         float maxY = (float)(offset.y + vertex.y);
         float maxZ = (float)(offset.z + vertex.z);
@@ -209,7 +210,7 @@ public class OBBSentinelBox extends SentinelBox {
          * @param attackConsumer
          * @return
          */
-        public Builder attackConsumer(Consumer<LivingEntity> attackConsumer) {
+        public Builder attackConsumer(BiConsumer<LivingEntity, LivingEntity> attackConsumer) {
             this.attackConsumer = attackConsumer;
             return this;
         }
@@ -223,6 +224,16 @@ public class OBBSentinelBox extends SentinelBox {
         public Builder typeDamage(ResourceKey<DamageType> damageType, float damageAmount) {
             this.damageType = damageType;
             this.damageAmount = damageAmount;
+            return this;
+        }
+
+        public Builder moverTpe(MoverType moverType) {
+            this.moverType = moverType;
+            return this;
+        }
+
+        public Builder followsBody() {
+            this.followsBody = true;
             return this;
         }
 

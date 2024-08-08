@@ -9,6 +9,9 @@ import net.minecraft.world.entity.Mob;
 
 import java.util.List;
 
+
+//TODO: ADD MORE DOCUMENTATION
+
 /**
  * This interface is used to define a sentinel. For an entity to use sentinel boxes, it <b><u>MUST</u></b> implement this interface.
  */

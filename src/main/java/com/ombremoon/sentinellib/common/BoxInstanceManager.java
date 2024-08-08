@@ -12,6 +12,8 @@ import java.util.List;
 public class BoxInstanceManager {
     private final List<BoxInstance> instances = new ObjectArrayList<>();
     private final ISentinel sentinel;
+    private float boxRot;
+    private float boxRot0;
 
     public BoxInstanceManager(ISentinel sentinel) {
         this.sentinel = sentinel;
@@ -52,6 +54,19 @@ public class BoxInstanceManager {
             }
         }
         return false;
+    }
+
+    public void setBoxRotation(float boxRot, float boxRot0) {
+        this.boxRot = boxRot;
+        this.boxRot0 = boxRot0;
+    }
+
+    public float getBoxRot() {
+        return this.boxRot;
+    }
+
+    public float getBoxRot0() {
+        return this.boxRot0;
     }
 
     /**

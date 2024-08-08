@@ -1,5 +1,7 @@
 package com.ombremoon.sentinellib.util;
 
+import com.ombremoon.sentinellib.api.box.BoxInstance;
+import com.ombremoon.sentinellib.common.ISentinel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -39,6 +41,12 @@ public class MatrixHelper {
         return matrix4f;
     }
 
+    public static Matrix4f getTranslatedEntityMatrix(LivingEntity owner, BoxInstance instance, float partialTicks) {
+        Matrix4f matrix4f = getEntityMatrix(owner, partialTicks);
+        matrix4f.translate(2.0F * (float) -Math.sin(0.15F * instance.tickCount), 0, 2.0F * (float) -Math.cos(0.15F * instance.tickCount));
+        return matrix4f;
+    }
+
     /**
      * Returns a 4x4 matrix representing the yaw of an entity
      * @param livingEntity The entity providing the look angle
@@ -46,8 +54,9 @@ public class MatrixHelper {
      * @return An identity 4x4 matrix that has been rotated on the y-axis
      */
     private static Matrix4f getEntityRotation(LivingEntity livingEntity, float partialTicks) {
-        float yRot = livingEntity.level().isClientSide ? livingEntity.yHeadRot : -livingEntity.getYHeadRot();
-        float yRot0 = livingEntity.level().isClientSide ? livingEntity.yHeadRotO : -livingEntity.getYHeadRot();
+        ISentinel sentinel = (ISentinel) livingEntity;
+        float yRot = livingEntity.level().isClientSide ? sentinel.getBoxManager().getBoxRot() : -sentinel.getBoxManager().getBoxRot();/*livingEntity.level().isClientSide ? livingEntity.yHeadRot : -livingEntity.getYHeadRot()*/
+        float yRot0 = livingEntity.level().isClientSide ? sentinel.getBoxManager().getBoxRot0() : -sentinel.getBoxManager().getBoxRot0();/*livingEntity.level().isClientSide ? livingEntity.yHeadRotO : -livingEntity.getYHeadRot()*/;
 
         Matrix4f matrix4f = new Matrix4f();
         float yawAmount = Mth.clampedLerp(yRot0, yRot, partialTicks);

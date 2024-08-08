@@ -1,27 +1,20 @@
 package com.ombremoon.sentinellib.mixin;
 
+import com.ombremoon.sentinellib.api.box.SentinelBox;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.IPlayerSentinel;
 import com.ombremoon.sentinellib.common.event.RegisterPlayerSentinelBoxEvent;
-import com.ombremoon.sentinellib.api.box.SentinelBox;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@Mixin(Player.class)
+@Mixin(value = LivingEntity.class, remap = false)
 public class DuckPlayerMixin implements IPlayerSentinel {
     private final BoxInstanceManager manager = new BoxInstanceManager(this);
     private final List<SentinelBox> boxList = new ObjectArrayList<>();
-
-    @Inject(method = "aiStep", at = @At("TAIL"))
-    private void aiStep(CallbackInfo info) {
-        tickBoxes();
-    }
 
     @Override
     public BoxInstanceManager getBoxManager() {

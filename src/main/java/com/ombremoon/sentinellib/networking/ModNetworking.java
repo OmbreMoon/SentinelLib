@@ -18,14 +18,19 @@ public class ModNetworking {
         sendToClients(new ClientboundRemoveSentinelBox(entityID, boxID));
     }
 
+    public static void syncRotation(int entityID, float rot, float rot0) {
+        sendToServer(new ServerboundSyncRotation(entityID, rot, rot0));
+    }
+
     public static void registerPackets() {
         var id = 0;
         PACKET_CHANNEL.registerMessage(id++, ClientboundTriggerSentinelBox.class, ClientboundTriggerSentinelBox::encode, ClientboundTriggerSentinelBox::new, ClientboundTriggerSentinelBox::handle);
         PACKET_CHANNEL.registerMessage(id++, ClientboundRemoveSentinelBox.class, ClientboundRemoveSentinelBox::encode, ClientboundRemoveSentinelBox::new, ClientboundRemoveSentinelBox::handle);
+        PACKET_CHANNEL.registerMessage(id++, ServerboundSyncRotation.class, ServerboundSyncRotation::encode, ServerboundSyncRotation::new, ServerboundSyncRotation::handle);
     }
 
-    protected <MSG> void sendToServer(MSG message) {
-        ModNetworking.PACKET_CHANNEL.sendToServer(message);
+    protected static  <MSG> void sendToServer(MSG message) {
+        PACKET_CHANNEL.sendToServer(message);
     }
 
     protected static  <MSG> void sendToPlayer(MSG message, ServerPlayer serverPlayer) {

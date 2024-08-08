@@ -13,6 +13,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -153,7 +154,7 @@ public class AABBSentinelBox extends SentinelBox {
          * @param attackConsumer
          * @return
          */
-        public Builder attackConsumer(Consumer<LivingEntity> attackConsumer) {
+        public Builder attackConsumer(BiConsumer<LivingEntity, LivingEntity> attackConsumer) {
             this.attackConsumer = attackConsumer;
             return this;
         }
@@ -167,6 +168,16 @@ public class AABBSentinelBox extends SentinelBox {
         public Builder typeDamage(ResourceKey<DamageType> damageType, float damageAmount) {
             this.damageType = damageType;
             this.damageAmount = damageAmount;
+            return this;
+        }
+
+        public Builder moverTpe(MoverType moverType) {
+            this.moverType = moverType;
+            return this;
+        }
+
+        public Builder followsBody() {
+            this.followsBody = true;
             return this;
         }
 

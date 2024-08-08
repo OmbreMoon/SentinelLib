@@ -4,6 +4,7 @@ import com.ombremoon.sentinellib.Constants;
 import com.ombremoon.sentinellib.api.BoxUtil;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.ISentinel;
+import com.ombremoon.sentinellib.networking.ModNetworking;
 import com.ombremoon.sentinellib.util.MatrixHelper;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.resources.ResourceKey;
@@ -24,7 +25,7 @@ public class BoxInstance {
     private final SentinelBox sentinelBox;
     private final LivingEntity boxOwner;
     private boolean isActive;
-    private int tickCount = 0;
+    public int tickCount = 0;
     private Vec3 centerVec;
     protected Vec3[] instanceVertices;
     protected Vec3[] instanceNormals;
@@ -93,9 +94,20 @@ public class BoxInstance {
             return;
         }
 
+        if (this.boxOwner.level().isClientSide) {
+            float f0 = this.sentinelBox.isFollowsBody() ? this.boxOwner.yBodyRot : this.boxOwner.yHeadRot;
+            float f1 = this.sentinelBox.isFollowsBody() ? this.boxOwner.yBodyRotO : this.boxOwner.yHeadRotO;
+            ((ISentinel)this.boxOwner).getBoxManager().setBoxRotation(f0, f1);
+            ModNetworking.syncRotation(this.boxOwner.getId(), f0, f1);
+        }
+
         int duration = this.sentinelBox.getDuration();
         if (this.tickCount <= duration) {
-            Matrix4f matrix4f = MatrixHelper.getEntityMatrix(this.boxOwner, 1.0F);
+            Matrix4f matrix4f = this.sentinelBox.getMoverType() == SentinelBox.MoverType.CUSTOM ? MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F) : MatrixHelper.getEntityMatrix(this.boxOwner, 1.0F);
+
+            //CREATE DYNAMIC TRANSLATIONAL/ROTATIONAL MATRIX
+//            matrix4f = MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F);
+
             this.updatePositionAndRotation(matrix4f);
 
             if (this.sentinelBox.getActiveDuration().test(this.boxOwner, this.tickCount)) {
@@ -120,7 +132,7 @@ public class BoxInstance {
                 LivingEntity livingEntity = (LivingEntity) entity;
                 if (sentinelBox.getAttackCondition().test(livingEntity)) {
                     if (!this.hurtEntities.contains(livingEntity)) {
-                        sentinelBox.getAttackConsumer().accept(livingEntity);
+                        sentinelBox.getAttackConsumer().accept(this.boxOwner, livingEntity);
                         ResourceKey<DamageType> damageType = sentinelBox.getDamageType();
                         if (damageType != null)
                             livingEntity.hurt(BoxUtil.sentinelDamageSource(livingEntity.level(), damageType, owner), sentinelBox.getDamageAmount());
