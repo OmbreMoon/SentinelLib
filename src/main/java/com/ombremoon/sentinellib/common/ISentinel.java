@@ -36,9 +36,9 @@ public interface ISentinel {
     default void triggerSentinelBox(SentinelBox sentinelBox) {
         Entity entity = getSentinel();
         if (entity.level().isClientSide) {
-            getBoxManager().addInstance(sentinelBox);
+            getBoxManager().addInstance(sentinelBox, entity);
         } else {
-            if (getBoxManager().addInstance(sentinelBox)) {
+            if (getBoxManager().addInstance(sentinelBox, entity)) {
                 ModNetworking.triggerSentinelBox(entity.getId(), sentinelBox.getName());
             }
         }

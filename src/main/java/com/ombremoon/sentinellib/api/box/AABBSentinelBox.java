@@ -171,16 +171,6 @@ public class AABBSentinelBox extends SentinelBox {
             return this;
         }
 
-        public Builder moverTpe(MoverType moverType) {
-            this.moverType = moverType;
-            return this;
-        }
-
-        public Builder followsBody() {
-            this.followsBody = true;
-            return this;
-        }
-
         /**
          * Builds the Sentinel Box
          * @return An AABBSentinelBox

@@ -1,7 +1,9 @@
 package com.ombremoon.sentinellib;
 
+import com.ombremoon.sentinellib.api.Easing;
 import com.ombremoon.sentinellib.api.box.BoxInstance;
 import com.ombremoon.sentinellib.api.box.OBBSentinelBox;
+import com.ombremoon.sentinellib.api.box.SentinelBox;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.IPlayerSentinel;
 import com.ombremoon.sentinellib.common.ISentinel;
@@ -29,10 +31,23 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class SentinelLib {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Constants.MOD_ID);
 
-    public static final OBBSentinelBox TEST = OBBSentinelBox.Builder.of("test")
+    public static final OBBSentinelBox TEST_ELASTIC = OBBSentinelBox.Builder.of("test")
+            .sizeAndOffset(0.5F, 0, 1, 0)
+            .activeTicks((entity, integer) -> integer == 20)
+            .boxDuration(100)
+            .moverType(SentinelBox.MoverType.CUSTOM_HEAD)
+            .defineMovement(SentinelBox.MovementAxis.X_TRANSLATION, (ticks, partialTicks) -> 0.0F)
+            .defineMovement(SentinelBox.MovementAxis.Z_TRANSLATION, (ticks, partialTicks) -> Easing.BOUNCE_IN_OUT.easing(-4.15F, (float) ticks / 100))
+            .typeDamage(DamageTypes.FREEZE, 15).build();
+
+    public static final OBBSentinelBox TEST_CIRCLE = OBBSentinelBox.Builder.of("circle")
             .sizeAndOffset(0.5F, 0, 1, 0)
             .activeTicks((entity, integer) -> integer > 0)
             .boxDuration(100)
+            .moverType(SentinelBox.MoverType.CUSTOM)
+            .defineMovement(SentinelBox.MovementAxis.X_TRANSLATION, (ticks, partialTicks) -> 2.0F * (float) Math.sin(0.15F * ticks))
+            .defineMovement(SentinelBox.MovementAxis.Y_TRANSLATION, (ticks, partialTicks) -> 2.0F * (float) Math.sin(0.15F * ticks))
+            .defineMovement(SentinelBox.MovementAxis.Z_TRANSLATION, (ticks, partialTicks) -> 2.0F * (float) Math.cos(0.15F * ticks))
             .typeDamage(DamageTypes.FREEZE, 15).build();
 
     public static final OBBSentinelBox BEAM_BOX = OBBSentinelBox.Builder.of("beam")
@@ -80,7 +95,8 @@ public class SentinelLib {
 
     @SubscribeEvent
     public static void registerSentinelBox(RegisterPlayerSentinelBoxEvent event) {
-        event.getSentinelBoxEntry().add(TEST);
+        event.getSentinelBoxEntry().add(TEST_ELASTIC);
+        event.getSentinelBoxEntry().add(TEST_CIRCLE);
         event.getSentinelBoxEntry().add(BEAM_BOX);
     }
 

@@ -1,6 +1,7 @@
 package com.ombremoon.sentinellib.util;
 
 import com.ombremoon.sentinellib.api.box.BoxInstance;
+import com.ombremoon.sentinellib.api.box.SentinelBox;
 import com.ombremoon.sentinellib.common.ISentinel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,8 +43,15 @@ public class MatrixHelper {
     }
 
     public static Matrix4f getTranslatedEntityMatrix(LivingEntity owner, BoxInstance instance, float partialTicks) {
-        Matrix4f matrix4f = getEntityMatrix(owner, partialTicks);
-        matrix4f.translate(2.0F * (float) -Math.sin(0.15F * instance.tickCount), 0, 2.0F * (float) -Math.cos(0.15F * instance.tickCount));
+        SentinelBox box = instance.getSentinelBox();
+        Vec3 pos = owner.position();
+        Matrix4f matrix4f = new Matrix4f();
+        Matrix4f centerMatrix = new Matrix4f().translate((float) -pos.x, (float) pos.y, (float) -pos.z);
+        matrix4f.mulLocal(centerMatrix.mul0(MatrixHelper.getEntityRotation(owner, partialTicks)));
+        float xMovement = box.getBoxMovement(SentinelBox.MovementAxis.X_TRANSLATION).apply(instance.tickCount, partialTicks);
+        float yMovement = box.getBoxMovement(SentinelBox.MovementAxis.Y_TRANSLATION).apply(instance.tickCount, partialTicks);
+        float zMovement = box.getBoxMovement(SentinelBox.MovementAxis.Z_TRANSLATION).apply(instance.tickCount, partialTicks);
+        matrix4f.translate(xMovement, yMovement, zMovement);
         return matrix4f;
     }
 
@@ -62,6 +70,27 @@ public class MatrixHelper {
         float yawAmount = Mth.clampedLerp(yRot0, yRot, partialTicks);
         return matrix4f.rotate(yawAmount * Mth.DEG_TO_RAD, new Vector3f(0.0F, 1.0F, 0.0F));
     }
+
+/*    private static Matrix4f getRotatedEntityMatrix(BoxInstance instance, float partialTicks) {
+        instance.xRot++;
+        instance.yRot++;
+        instance.zRot++;
+        float xRot = instance.xRot;
+        float xRot0 = instance.xRot0;
+        float yRot = instance.yRot;
+        float yRot0 = instance.yRot0;
+        float zRot = instance.zRot;
+        float zRot0 = instance.zRot0;
+
+        Matrix4f matrix4f = new Matrix4f();
+        float xRotation = Mth.clampedLerp(xRot0, xRot, partialTicks);
+        float yRotation = Mth.clampedLerp(yRot0, yRot, partialTicks);
+        float zRotation = Mth.clampedLerp(zRot0, zRot, partialTicks);
+        matrix4f.rotate(xRotation * Mth.DEG_TO_RAD, new Vector3f(1.0F, 0.0F, 0.0F));
+        matrix4f.rotate(yRotation * Mth.DEG_TO_RAD, new Vector3f(0.0F, 1.0F, 0.0F));
+        matrix4f.rotate(zRotation * Mth.DEG_TO_RAD, new Vector3f(0.0F, 0.0F, 1.0F));
+        return matrix4f;
+    }*/
 
     /**
      * Returns a quaternion from a 4x4 matrix. Used for client rendering.

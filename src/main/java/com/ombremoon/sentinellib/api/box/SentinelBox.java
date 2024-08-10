@@ -2,6 +2,8 @@ package com.ombremoon.sentinellib.api.box;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.datafixers.util.Pair;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
@@ -11,6 +13,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -29,7 +32,7 @@ public abstract class SentinelBox {
     private final ResourceKey<DamageType> damageType;
     private final float damageAmount;
     private final MoverType moverType;
-    private final boolean followsBody;
+    private final Int2ObjectOpenHashMap<BiFunction<Integer, Float, Float>> boxMovement;
     private final Vec3[] vertices;
     private final Vec3[] normals;
 
@@ -45,7 +48,7 @@ public abstract class SentinelBox {
         this.damageType = builder.damageType;
         this.damageAmount = builder.damageAmount;
         this.moverType = builder.moverType;
-        this.followsBody = builder.followsBody;
+        this.boxMovement = builder.boxMovement;
         this.vertices = new Vec3[]{new Vec3(vertexPos.x, vertexPos.y, -vertexPos.z), new Vec3(vertexPos.x, vertexPos.y, vertexPos.z), new Vec3(-vertexPos.x, vertexPos.y, vertexPos.z), new Vec3(-vertexPos.x, vertexPos.y, -vertexPos.z)};
         this.normals = new Vec3[]{new Vec3(1.0F, 0.0F, 0.0F), new Vec3(0.0F, 1.0F, 0.0F), new Vec3(0.0F, 0.0F, -1.0F)};
     }
@@ -106,14 +109,63 @@ public abstract class SentinelBox {
         return this.moverType;
     }
 
-    public boolean isFollowsBody() {
-        return this.followsBody;
+    public BiFunction<Integer, Float, Float> getBoxMovement(MovementAxis axis) {
+        return this.boxMovement.containsKey(axis.ordinal()) ? this.boxMovement.get(axis.ordinal()) : (ticks, partialTicks) -> 0.0F;
+    }
+
+    public Pair<Float, Float> getProperRotation(LivingEntity entity) {
+        float f0;
+        float f1;
+        switch (this.moverType) {
+            case BODY, CUSTOM_BODY -> {
+                f0 = entity.yBodyRot;
+                f1 = entity.yBodyRotO;
+            }
+            case HEAD, CUSTOM_HEAD -> {
+                f0 = entity.yHeadRot;
+                f1 = entity.yHeadRotO;
+            }
+            default -> {
+                f0 = 0;
+                f1 = 0;
+            }
+        }
+        return Pair.of(f0, f1);
     }
 
     public enum MoverType {
-        HEAD,
-        BODY,
-        CUSTOM
+        HEAD(false, false),
+        BODY(false, false),
+        CUSTOM(true, true),
+        CUSTOM_HEAD(true, true),
+        CUSTOM_BODY(true, true),
+        CIRCLE(true, false),
+        SQUARE(true, false);
+
+        private final boolean isDynamic;
+        private final boolean isDefined;
+
+        MoverType(boolean isDynamic, boolean isDefined) {
+            this.isDynamic = isDynamic;
+            this.isDefined = isDefined;
+        }
+
+        public boolean isDynamic() {
+            return this.isDynamic;
+        }
+
+        public boolean isDefined() {
+            return this.isDefined;
+        }
+    }
+
+    public enum MovementAxis {
+        X_TRANSLATION,
+        Y_TRANSLATION,
+        Z_TRANSLATION,
+        X_ROTATION,
+        Y_ROTATION,
+        Z_ROTATION
     }
 
     protected static class Builder {
@@ -128,7 +180,7 @@ public abstract class SentinelBox {
         protected ResourceKey<DamageType> damageType;
         protected float damageAmount;
         protected MoverType moverType = MoverType.HEAD;
-        protected boolean followsBody;
+        protected Int2ObjectOpenHashMap<BiFunction<Integer, Float, Float>> boxMovement = new Int2ObjectOpenHashMap<>();
 
         protected Builder(String name) {
             this.name = name;

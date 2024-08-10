@@ -2,6 +2,7 @@ package com.ombremoon.sentinellib.api.box;
 
 import com.ombremoon.sentinellib.Constants;
 import com.ombremoon.sentinellib.api.BoxUtil;
+import com.ombremoon.sentinellib.api.Easing;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.ISentinel;
 import com.ombremoon.sentinellib.networking.ModNetworking;
@@ -95,18 +96,16 @@ public class BoxInstance {
         }
 
         if (this.boxOwner.level().isClientSide) {
-            float f0 = this.sentinelBox.isFollowsBody() ? this.boxOwner.yBodyRot : this.boxOwner.yHeadRot;
-            float f1 = this.sentinelBox.isFollowsBody() ? this.boxOwner.yBodyRotO : this.boxOwner.yHeadRotO;
+            var rotation = sentinelBox.getProperRotation(this.boxOwner);
+            float f0 = rotation.getFirst();
+            float f1 = rotation.getSecond();
             ((ISentinel)this.boxOwner).getBoxManager().setBoxRotation(f0, f1);
             ModNetworking.syncRotation(this.boxOwner.getId(), f0, f1);
         }
 
         int duration = this.sentinelBox.getDuration();
         if (this.tickCount <= duration) {
-            Matrix4f matrix4f = this.sentinelBox.getMoverType() == SentinelBox.MoverType.CUSTOM ? MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F) : MatrixHelper.getEntityMatrix(this.boxOwner, 1.0F);
-
-            //CREATE DYNAMIC TRANSLATIONAL/ROTATIONAL MATRIX
-//            matrix4f = MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F);
+            Matrix4f matrix4f = this.sentinelBox.getMoverType().isDynamic() ? MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F) : MatrixHelper.getEntityMatrix(this.boxOwner, 1.0F);
 
             this.updatePositionAndRotation(matrix4f);
 

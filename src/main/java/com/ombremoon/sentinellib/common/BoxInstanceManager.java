@@ -3,6 +3,8 @@ package com.ombremoon.sentinellib.common;
 import com.ombremoon.sentinellib.api.box.BoxInstance;
 import com.ombremoon.sentinellib.api.box.SentinelBox;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.List;
 
@@ -22,14 +24,19 @@ public class BoxInstanceManager {
     /**
      * Add a new box instance to the manager if it is not already running it.
      * @param sentinelBox The sentinel box to make an instance of.
+     * @param entity The sentinel that triggered the box. Used to initialize box rotation
      * @return Whether the manager should add the instance.
      */
-    public boolean addInstance(SentinelBox sentinelBox) {
+    public boolean addInstance(SentinelBox sentinelBox, Entity entity) {
         BoxInstance instance = new BoxInstance(sentinelBox, this.sentinel.getSentinel());
         for (BoxInstance boxInstance : this.instances) {
             if (boxInstance.equals(instance)) return false;
         }
         this.instances.add(instance);
+        var rotation = sentinelBox.getProperRotation((LivingEntity) entity);
+        float f0 = rotation.getFirst();
+        float f1 = rotation.getSecond();
+        this.setBoxRotation(f0, f1);
         return true;
     }
 

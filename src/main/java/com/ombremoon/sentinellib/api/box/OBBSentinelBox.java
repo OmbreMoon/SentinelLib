@@ -2,7 +2,6 @@ package com.ombremoon.sentinellib.api.box;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.ombremoon.sentinellib.Constants;
 import com.ombremoon.sentinellib.common.ISentinel;
 import com.ombremoon.sentinellib.util.MatrixHelper;
 import net.minecraft.resources.ResourceKey;
@@ -16,6 +15,7 @@ import org.joml.Matrix4f;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -35,10 +35,18 @@ public class OBBSentinelBox extends SentinelBox {
 
     @Override
     public void renderBox(BoxInstance instance, LivingEntity entity, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, float isRed) {
-        Matrix4f transpose = MatrixHelper.getEntityMatrix(entity, partialTicks);
+        MoverType moverType = instance.getSentinelBox().getMoverType();
+        Matrix4f transpose = moverType.isDynamic() ? MatrixHelper.getTranslatedEntityMatrix(entity, instance, partialTicks) : MatrixHelper.getEntityMatrix(entity, partialTicks);
         poseStack.pushPose();
         poseStack.mulPose(MatrixHelper.quaternion(transpose));
-        Matrix4f matrix = poseStack.last().pose().translate(2.0F * (float) Math.sin(0.15F * instance.tickCount), 0, 2.0F * (float) Math.cos(0.15F * instance.tickCount));
+        Matrix4f matrix = poseStack.last().pose();
+        if (moverType.isDefined()) {
+            SentinelBox box = instance.getSentinelBox();
+            float xMovement = box.getBoxMovement(SentinelBox.MovementAxis.X_TRANSLATION).apply(instance.tickCount, partialTicks);
+            float yMovement = box.getBoxMovement(SentinelBox.MovementAxis.Y_TRANSLATION).apply(instance.tickCount, partialTicks);
+            float zMovement = box.getBoxMovement(SentinelBox.MovementAxis.Z_TRANSLATION).apply(instance.tickCount, partialTicks);
+            matrix.translate(-xMovement, yMovement, -zMovement);
+        }
         Matrix3f matrix3f = poseStack.last().normal();
         Vec3 vertex = this.getVertexPos();
         Vec3 offset = this.getBoxOffset();
@@ -136,6 +144,9 @@ public class OBBSentinelBox extends SentinelBox {
 
         public Builder(String name) {
             super(name);
+            this.boxMovement.put(0, (ticks, partialTicks) -> 0.0F);
+            this.boxMovement.put(1, (ticks, partialTicks) -> 0.0F);
+            this.boxMovement.put(2, (ticks, partialTicks) -> 0.0F);
         }
 
         /**
@@ -227,13 +238,14 @@ public class OBBSentinelBox extends SentinelBox {
             return this;
         }
 
-        public Builder moverTpe(MoverType moverType) {
+        public Builder moverType(MoverType moverType) {
             this.moverType = moverType;
             return this;
         }
 
-        public Builder followsBody() {
-            this.followsBody = true;
+        public Builder defineMovement(MovementAxis axis, BiFunction<Integer, Float, Float> boxMovement) {
+            if (axis.ordinal() > 2) throw new IllegalArgumentException("Axis must be translational");
+            this.boxMovement.put(axis.ordinal(), boxMovement);
             return this;
         }
 

@@ -17,7 +17,13 @@ public class DebugItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         ItemStack itemStack = pPlayer.getItemInHand(pUsedHand);
         if (!pLevel.isClientSide) {
-            BoxUtil.triggerPlayerBox(pPlayer, SentinelLib.TEST);
+            if (pPlayer.isCrouching()) {
+                BoxUtil.triggerPlayerBox(pPlayer, SentinelLib.TEST_CIRCLE);
+            } else if (pPlayer.onGround()) {
+                BoxUtil.triggerPlayerBox(pPlayer, SentinelLib.TEST_ELASTIC);
+            } else {
+                BoxUtil.triggerPlayerBox(pPlayer, SentinelLib.BEAM_BOX);
+            }
         }
         return super.use(pLevel, pPlayer, pUsedHand);
     }
