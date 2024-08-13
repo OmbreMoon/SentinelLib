@@ -37,9 +37,9 @@ public class OBBSentinelBox extends SentinelBox {
         poseStack.pushPose();
         poseStack.mulPose(MatrixHelper.quaternion(transpose));
         Matrix4f matrix = poseStack.last().pose();
-        if (moverType.isDefined()) {
+        if (moverType.isDynamic()) {
             Vec3 vec3 = this.getBoxPath(instance, partialTicks);
-            matrix.translate((float) -vec3.x, (float) vec3.y, (float) -vec3.z);
+            matrix.translate((float) vec3.x, (float) vec3.y, (float) vec3.z);
         }
         Matrix3f matrix3f = poseStack.last().normal();
         Vec3 vertex = this.getVertexPos();
@@ -340,9 +340,19 @@ public class OBBSentinelBox extends SentinelBox {
             return this;
         }
 
+        public Builder circleMovement(float radius, float cycleSpeed) {
+            this.boxMovement.put(0, (ticks, partialTicks) -> {
+                return radius * (float) Math.sin(cycleSpeed * ticks);
+            });
+            this.boxMovement.put(2, (ticks, partialTicks) -> {
+                return radius * (float) Math.cos(cycleSpeed * ticks);
+            });
+            return this;
+        }
+
         /**
          * Builds the Sentinel Box
-         * @return An AABBSentinelBox
+         * @return An OBBSentinelBox
          */
         public OBBSentinelBox build() {
             return new OBBSentinelBox(this);

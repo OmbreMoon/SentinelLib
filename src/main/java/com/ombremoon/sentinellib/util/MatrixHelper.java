@@ -49,7 +49,7 @@ public class MatrixHelper {
         Matrix4f centerMatrix = new Matrix4f().translate((float) -pos.x, (float) pos.y, (float) -pos.z);
         matrix4f.mulLocal(centerMatrix.mul0(MatrixHelper.getEntityRotation(owner, partialTicks)));
         Vec3 path = box.getBoxPath(instance, partialTicks);
-        matrix4f.translate((float) path.x, (float) path.y, (float) path.z);
+        matrix4f.translate((float) -path.x, (float) path.y, (float) -path.z);
         return matrix4f;
     }
 

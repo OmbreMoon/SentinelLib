@@ -171,28 +171,20 @@ public abstract class SentinelBox {
     }
 
     public enum MoverType {
-        HEAD(false, false),
-        BODY(false, false),
-        CUSTOM(true, true),
-        CUSTOM_HEAD(true, true),
-        CUSTOM_BODY(true, true),
-        CIRCLE(true, false),
-        SQUARE(true, false);
+        HEAD(false),
+        BODY(false),
+        CUSTOM(true),
+        CUSTOM_HEAD(true),
+        CUSTOM_BODY(true);
 
         private final boolean isDynamic;
-        private final boolean isDefined;
 
-        MoverType(boolean isDynamic, boolean isDefined) {
+        MoverType(boolean isDynamic) {
             this.isDynamic = isDynamic;
-            this.isDefined = isDefined;
         }
 
         public boolean isDynamic() {
             return this.isDynamic;
-        }
-
-        public boolean isDefined() {
-            return this.isDefined;
         }
     }
 

@@ -35,44 +35,22 @@ public class SentinelLib {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Constants.MOD_ID);
 
     public static final OBBSentinelBox TEST_ELASTIC = OBBSentinelBox.Builder.of("test")
-            .sizeAndOffset(0.5F, 1.0F, 1, 1.0F)
+            .sizeAndOffset(0.5F, 0.0F, 1, 1.0F)
             .activeTicks((entity, integer) -> integer > 0)
             .boxDuration(100)
             .moverType(SentinelBox.MoverType.CUSTOM_HEAD)
-//            .squareMovement(2.0F, 1)
-            .defineMovement(SentinelBox.MovementAxis.X_TRANSLATION, (ticks, partialTicks) -> {
-                float f0 = Easing.QUAD_IN.easing((float) ticks / 100);
-                if (ticks % 40 < 10) {
-                    return 0.1F * (ticks % 10);
-                } else if (ticks % 40 < 20) {
-                    return 1.0F;
-                } else if (ticks % 40 < 30) {
-                    return 1 - 0.1F * (ticks % 10);
-                } else {
-                    return 0.0F;
-                }
-            })
             .defineMovement(SentinelBox.MovementAxis.Z_TRANSLATION, (ticks, partialTicks) -> {
-                if (ticks % 40 < 10) {
-                    return  0.0F;
-                } else if (ticks % 40 < 20) {
-                    return 0.1F * (ticks % 10);
-                } else if (ticks % 40 < 30) {
-                    return 1.0F;
-                } else {
-                    return 1 - 0.1F * (ticks % 10);
-                }
+                return Easing.BOUNCE_OUT.easing(3.0F, (float) ticks / 100);
             })
             .typeDamage(DamageTypes.FREEZE, 15).build();
 
     public static final OBBSentinelBox TEST_CIRCLE = OBBSentinelBox.Builder.of("circle")
             .sizeAndOffset(0.5F, 0, 1, 0)
             .activeTicks((entity, integer) -> integer > 0)
-            .boxDuration(100)
+            .noDuration(Entity::onGround)
             .moverType(SentinelBox.MoverType.CUSTOM)
-            .defineMovement(SentinelBox.MovementAxis.X_TRANSLATION, (ticks, partialTicks) -> 2.0F * (float) Math.sin(0.15F * ticks))
-            .defineMovement(SentinelBox.MovementAxis.Y_TRANSLATION, (ticks, partialTicks) -> 2.0F * (float) Math.sin(0.15F * ticks))
-            .defineMovement(SentinelBox.MovementAxis.Z_TRANSLATION, (ticks, partialTicks) -> 2.0F * (float) Math.cos(0.15F * ticks))
+            .circleMovement(2.0F, 0.15F)
+            .defineMovement(SentinelBox.MovementAxis.Y_TRANSLATION, (ticks, partialTicks) -> 3 * (float) Math.sin(0.05F * ticks))
             .typeDamage(DamageTypes.FREEZE, 15).build();
 
     public static final OBBSentinelBox BEAM_BOX = OBBSentinelBox.Builder.of("beam")

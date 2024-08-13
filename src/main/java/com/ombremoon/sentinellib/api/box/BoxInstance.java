@@ -27,6 +27,8 @@ public class BoxInstance {
     private boolean start = false;
     private boolean isActive;
     public int tickCount = 0;
+    private float yRot;
+    private float yRot0;
     private Vec3 centerVec;
     protected Vec3[] instanceVertices;
     protected Vec3[] instanceNormals;
