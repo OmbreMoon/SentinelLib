@@ -27,16 +27,17 @@ public class BoxInstanceManager {
      * @param entity The sentinel that triggered the box. Used to initialize box rotation
      * @return Whether the manager should add the instance.
      */
-    public boolean addInstance(SentinelBox sentinelBox, Entity entity) {
+    public boolean addInstance(SentinelBox sentinelBox, LivingEntity entity) {
         BoxInstance instance = new BoxInstance(sentinelBox, this.sentinel.getSentinel());
         for (BoxInstance boxInstance : this.instances) {
             if (boxInstance.equals(instance)) return false;
         }
         this.instances.add(instance);
-        var rotation = sentinelBox.getProperRotation((LivingEntity) entity);
+        var rotation = sentinelBox.getProperRotation(entity);
         float f0 = rotation.getFirst();
         float f1 = rotation.getSecond();
         this.setBoxRotation(f0, f1);
+        sentinelBox.onBoxTrigger().accept(entity);
         return true;
     }
 

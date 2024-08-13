@@ -48,10 +48,8 @@ public class MatrixHelper {
         Matrix4f matrix4f = new Matrix4f();
         Matrix4f centerMatrix = new Matrix4f().translate((float) -pos.x, (float) pos.y, (float) -pos.z);
         matrix4f.mulLocal(centerMatrix.mul0(MatrixHelper.getEntityRotation(owner, partialTicks)));
-        float xMovement = box.getBoxMovement(SentinelBox.MovementAxis.X_TRANSLATION).apply(instance.tickCount, partialTicks);
-        float yMovement = box.getBoxMovement(SentinelBox.MovementAxis.Y_TRANSLATION).apply(instance.tickCount, partialTicks);
-        float zMovement = box.getBoxMovement(SentinelBox.MovementAxis.Z_TRANSLATION).apply(instance.tickCount, partialTicks);
-        matrix4f.translate(xMovement, yMovement, zMovement);
+        Vec3 path = box.getBoxPath(instance, partialTicks);
+        matrix4f.translate((float) path.x, (float) path.y, (float) path.z);
         return matrix4f;
     }
 

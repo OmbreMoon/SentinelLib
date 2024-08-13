@@ -4,6 +4,8 @@ public abstract class Easing {
 
     public abstract float easing(float length, float progress);
 
+    public float easing(float progress) { return this.easing(1, progress); }
+
     public static Easing SINE_IN = new Easing() {
 
         @Override

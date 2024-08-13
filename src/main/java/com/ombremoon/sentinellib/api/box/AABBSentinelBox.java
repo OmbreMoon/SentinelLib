@@ -89,6 +89,7 @@ public class AABBSentinelBox extends SentinelBox {
          * @return The builder
          */
         public static Builder of(String name) { return new Builder(name); }
+
         public Builder sizeAndOffset(float xSize, float xOffset, float yOffset, float zOffset) {
             sizeAndOffset(xSize, xSize, xOffset, yOffset, zOffset);
             return this;
@@ -130,6 +131,27 @@ public class AABBSentinelBox extends SentinelBox {
         }
 
         /**
+         * Sets the box to have an infinite duration.<br> Must define a predicate for when the box should stop.
+         * @param stopPredicate
+         * @return The builder
+         */
+        public Builder noDuration(Predicate<LivingEntity> stopPredicate) {
+            this.hasDuration = false;
+            this.stopPredicate = stopPredicate;
+            return this;
+        }
+
+        /**
+         * Callback to define when/if a box should stop before its intended duration.
+         * @param stopPredicate
+         * @return The builder
+         */
+        public Builder stopIf(Predicate<LivingEntity> stopPredicate) {
+            this.stopPredicate = stopPredicate;
+            return this;
+        }
+
+        /**
          * Callback to define when the box should be active.
          * @param activeDuration
          * @return The builder
@@ -150,12 +172,52 @@ public class AABBSentinelBox extends SentinelBox {
         }
 
         /**
+         * Callback to add extra functionality to the sentinel box when triggered
+         * @param startConsumer
+         * @return
+         */
+        public Builder onBoxTrigger(Consumer<LivingEntity> startConsumer) {
+            this.boxStart = startConsumer;
+            return this;
+        }
+
+        /**
+         * Callback to add extra functionality to the sentinel box every tick
+         * @param tickConsumer
+         * @return
+         */
+        public Builder onBoxTick(Consumer<LivingEntity> tickConsumer) {
+            this.boxTick = tickConsumer;
+            return this;
+        }
+
+        /**
+         * Callback to add extra functionality to the sentinel box at the end of its duration
+         * @param stopConsumer
+         * @return
+         */
+        public Builder onBoxStop(Consumer<LivingEntity> stopConsumer) {
+            this.boxStop = stopConsumer;
+            return this;
+        }
+
+        /**
          * Callback to add extra functionality to the sentinel box while active
+         * @param activeConsumer
+         * @return
+         */
+        public Builder onActiveTick(Consumer<LivingEntity> activeConsumer) {
+            this.boxActive = activeConsumer;
+            return this;
+        }
+
+        /**
+         * Callback to add extra functionality to the sentinel box when colliding with an entity
          * @param attackConsumer
          * @return
          */
-        public Builder attackConsumer(BiConsumer<LivingEntity, LivingEntity> attackConsumer) {
-            this.attackConsumer = attackConsumer;
+        public Builder onHurtTick(BiConsumer<LivingEntity, LivingEntity> attackConsumer) {
+            this.boxHurt = attackConsumer;
             return this;
         }
 

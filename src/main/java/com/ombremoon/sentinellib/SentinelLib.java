@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.client.event.RenderLivingEvent;
@@ -20,11 +21,13 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import software.bernie.geckolib.event.GeoRenderEvent;
 
 @Mod(Constants.MOD_ID)
 @Mod.EventBusSubscriber(modid = Constants.MOD_ID)
@@ -32,12 +35,34 @@ public class SentinelLib {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Constants.MOD_ID);
 
     public static final OBBSentinelBox TEST_ELASTIC = OBBSentinelBox.Builder.of("test")
-            .sizeAndOffset(0.5F, 0, 1, 0)
-            .activeTicks((entity, integer) -> integer == 20)
+            .sizeAndOffset(0.5F, 1.0F, 1, 1.0F)
+            .activeTicks((entity, integer) -> integer > 0)
             .boxDuration(100)
             .moverType(SentinelBox.MoverType.CUSTOM_HEAD)
-            .defineMovement(SentinelBox.MovementAxis.X_TRANSLATION, (ticks, partialTicks) -> 0.0F)
-            .defineMovement(SentinelBox.MovementAxis.Z_TRANSLATION, (ticks, partialTicks) -> Easing.BOUNCE_IN_OUT.easing(-4.15F, (float) ticks / 100))
+//            .squareMovement(2.0F, 1)
+            .defineMovement(SentinelBox.MovementAxis.X_TRANSLATION, (ticks, partialTicks) -> {
+                float f0 = Easing.QUAD_IN.easing((float) ticks / 100);
+                if (ticks % 40 < 10) {
+                    return 0.1F * (ticks % 10);
+                } else if (ticks % 40 < 20) {
+                    return 1.0F;
+                } else if (ticks % 40 < 30) {
+                    return 1 - 0.1F * (ticks % 10);
+                } else {
+                    return 0.0F;
+                }
+            })
+            .defineMovement(SentinelBox.MovementAxis.Z_TRANSLATION, (ticks, partialTicks) -> {
+                if (ticks % 40 < 10) {
+                    return  0.0F;
+                } else if (ticks % 40 < 20) {
+                    return 0.1F * (ticks % 10);
+                } else if (ticks % 40 < 30) {
+                    return 1.0F;
+                } else {
+                    return 1 - 0.1F * (ticks % 10);
+                }
+            })
             .typeDamage(DamageTypes.FREEZE, 15).build();
 
     public static final OBBSentinelBox TEST_CIRCLE = OBBSentinelBox.Builder.of("circle")
@@ -59,6 +84,7 @@ public class SentinelLib {
     public SentinelLib() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::commonSetup);
+        renderGeckolibSentinelBoxes(modEventBus);
         MinecraftForge.EVENT_BUS.register(this);
         ITEMS.register(modEventBus);
         if (CommonClass.isDevEnv()) {
@@ -100,22 +126,27 @@ public class SentinelLib {
         event.getSentinelBoxEntry().add(BEAM_BOX);
     }
 
-/*    @SubscribeEvent
-    public static void renderGeoSentinelBox(GeoRenderEvent.Entity.Post event) {
-        Entity entity = event.getEntity();
-        Minecraft minecraft = Minecraft.getInstance();
+    private void renderGeckolibSentinelBoxes(IEventBus modEventBus) {
+        if (ModList.get().isLoaded("geckolib")) {
+            modEventBus.addListener(event -> {
+                if (event instanceof GeoRenderEvent.Entity.Post renderEvent) {
+                    Entity entity = renderEvent.getEntity();
+                    Minecraft minecraft = Minecraft.getInstance();
 
-        if (!(entity instanceof LivingEntity livingEntity))
-            return;
+                    if (!(entity instanceof LivingEntity livingEntity))
+                        return;
 
-        if (entity.level() == null)
-            return;
+                    if (entity.level() == null)
+                        return;
 
-        if (minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes() && !minecraft.showOnlyReducedInfo() && livingEntity instanceof ISentinel sentinel) {
-            BoxInstanceManager manager = sentinel.getBoxManager();
-            for (BoxInstance instance : manager.getInstances()) {
-                instance.getSentinelBox().renderBox(instance, livingEntity, event.getPoseStack(), event.getBufferSource().getBuffer(RenderType.lines()), event.getPartialTick(), instance.isActive() ? 0.0F : 1.0F);
-            }
+                    if (minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes() && !minecraft.showOnlyReducedInfo() && livingEntity instanceof ISentinel sentinel) {
+                        BoxInstanceManager manager = sentinel.getBoxManager();
+                        for (BoxInstance instance : manager.getInstances()) {
+                            instance.getSentinelBox().renderBox(instance, livingEntity, renderEvent.getPoseStack(), renderEvent.getBufferSource().getBuffer(RenderType.lines()), renderEvent.getPartialTick(), instance.isActive() ? 0.0F : 1.0F);
+                        }
+                    }
+                }
+            });
         }
-    }*/
+    }
 }

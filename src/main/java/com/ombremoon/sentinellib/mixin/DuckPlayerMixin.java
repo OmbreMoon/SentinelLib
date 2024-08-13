@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 import java.util.List;
 
-@Mixin(value = LivingEntity.class, remap = false)
+@Mixin(value = Player.class, remap = false)
 public class DuckPlayerMixin implements IPlayerSentinel {
     private final BoxInstanceManager manager = new BoxInstanceManager(this);
     private final List<SentinelBox> boxList = new ObjectArrayList<>();

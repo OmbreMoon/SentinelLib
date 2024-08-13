@@ -14,10 +14,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
+import java.util.function.*;
 
 /**
  * An OBB based sentinel box, used for more dynamic functionality.<br> Can be offset, translated, and rotated based on the {@link ISentinel Sentinels'} needs.
@@ -41,11 +38,8 @@ public class OBBSentinelBox extends SentinelBox {
         poseStack.mulPose(MatrixHelper.quaternion(transpose));
         Matrix4f matrix = poseStack.last().pose();
         if (moverType.isDefined()) {
-            SentinelBox box = instance.getSentinelBox();
-            float xMovement = box.getBoxMovement(SentinelBox.MovementAxis.X_TRANSLATION).apply(instance.tickCount, partialTicks);
-            float yMovement = box.getBoxMovement(SentinelBox.MovementAxis.Y_TRANSLATION).apply(instance.tickCount, partialTicks);
-            float zMovement = box.getBoxMovement(SentinelBox.MovementAxis.Z_TRANSLATION).apply(instance.tickCount, partialTicks);
-            matrix.translate(-xMovement, yMovement, -zMovement);
+            Vec3 vec3 = this.getBoxPath(instance, partialTicks);
+            matrix.translate((float) -vec3.x, (float) vec3.y, (float) -vec3.z);
         }
         Matrix3f matrix3f = poseStack.last().normal();
         Vec3 vertex = this.getVertexPos();
@@ -137,6 +131,14 @@ public class OBBSentinelBox extends SentinelBox {
         return !(MatrixHelper.project(distance, normal).length() > MatrixHelper.project(maxProj1, normal).length() + MatrixHelper.project(maxProj2, normal).length());
     }
 
+    @Override
+    public Vec3 getBoxPath(BoxInstance instance, float partialTicks) {
+        float xMovement = this.getBoxMovement(SentinelBox.MovementAxis.X_TRANSLATION).apply(instance.tickCount, partialTicks);
+        float yMovement = this.getBoxMovement(SentinelBox.MovementAxis.Y_TRANSLATION).apply(instance.tickCount, partialTicks);
+        float zMovement = this.getBoxMovement(SentinelBox.MovementAxis.Z_TRANSLATION).apply(instance.tickCount, partialTicks);
+        return new Vec3(xMovement, yMovement, zMovement);
+    }
+
     /**
      * Builder pattern for OBB based sentinel boxes
      */
@@ -197,6 +199,27 @@ public class OBBSentinelBox extends SentinelBox {
         }
 
         /**
+         * Sets the box to have an infinite duration.<br> Must define a predicate for when the box should stop.
+         * @param stopPredicate
+         * @return The builder
+         */
+        public Builder noDuration(Predicate<LivingEntity> stopPredicate) {
+            this.hasDuration = false;
+            this.stopPredicate = stopPredicate;
+            return this;
+        }
+
+        /**
+         * Callback to define when/if a box should stop before its intended duration.
+         * @param stopPredicate
+         * @return The builder
+         */
+        public Builder stopIf(Predicate<LivingEntity> stopPredicate) {
+            this.stopPredicate = stopPredicate;
+            return this;
+        }
+
+        /**
          * Callback to define when the box should be active.
          * @param activeDuration
          * @return The builder
@@ -217,12 +240,52 @@ public class OBBSentinelBox extends SentinelBox {
         }
 
         /**
+         * Callback to add extra functionality to the sentinel box when triggered
+         * @param startConsumer
+         * @return
+         */
+        public Builder onBoxTrigger(Consumer<LivingEntity> startConsumer) {
+            this.boxStart = startConsumer;
+            return this;
+        }
+
+        /**
+         * Callback to add extra functionality to the sentinel box every tick
+         * @param tickConsumer
+         * @return
+         */
+        public Builder onBoxTick(Consumer<LivingEntity> tickConsumer) {
+            this.boxTick = tickConsumer;
+            return this;
+        }
+
+        /**
+         * Callback to add extra functionality to the sentinel box at the end of its duration
+         * @param stopConsumer
+         * @return
+         */
+        public Builder onBoxStop(Consumer<LivingEntity> stopConsumer) {
+            this.boxStop = stopConsumer;
+            return this;
+        }
+
+        /**
          * Callback to add extra functionality to the sentinel box while active
+         * @param activeConsumer
+         * @return
+         */
+        public Builder onActiveTick(Consumer<LivingEntity> activeConsumer) {
+            this.boxActive = activeConsumer;
+            return this;
+        }
+
+        /**
+         * Callback to add extra functionality to the sentinel box when colliding with an entity
          * @param attackConsumer
          * @return
          */
-        public Builder attackConsumer(BiConsumer<LivingEntity, LivingEntity> attackConsumer) {
-            this.attackConsumer = attackConsumer;
+        public Builder onHurtTick(BiConsumer<LivingEntity, LivingEntity> attackConsumer) {
+            this.boxHurt = attackConsumer;
             return this;
         }
 
@@ -246,6 +309,34 @@ public class OBBSentinelBox extends SentinelBox {
         public Builder defineMovement(MovementAxis axis, BiFunction<Integer, Float, Float> boxMovement) {
             if (axis.ordinal() > 2) throw new IllegalArgumentException("Axis must be translational");
             this.boxMovement.put(axis.ordinal(), boxMovement);
+            return this;
+        }
+
+        public Builder squareMovement(float length, int cycleSpeed) {
+            int i1 = cycleSpeed * 40;
+            int i2 = i1 / 4;
+            this.boxMovement.put(0, (ticks, partialTicks) -> {
+                if (ticks % i1 < i1 * 0.25F) {
+                    return (length / i2) * (ticks % i2);
+                } else if (ticks % i1 < i1 * 0.5F) {
+                    return length;
+                } else if (ticks % i1 < i1 * 0.75F) {
+                    return length - (length / i2) * (ticks % i2);
+                } else {
+                    return 0.0F;
+                }
+            });
+            this.boxMovement.put(2, (ticks, partialTicks) -> {
+                if (ticks % i1 < i1 * 0.25F) {
+                    return  0.0F;
+                } else if (ticks % i1 < i1 * 0.5F) {
+                    return (length / i2) * (ticks % i2);
+                } else if (ticks % i1 < i1 * 0.75F) {
+                    return length;
+                } else {
+                    return length - (length / i2) * (ticks % i2);
+                }
+            });
             return this;
         }
 

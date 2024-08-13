@@ -2,7 +2,6 @@ package com.ombremoon.sentinellib.api.box;
 
 import com.ombremoon.sentinellib.Constants;
 import com.ombremoon.sentinellib.api.BoxUtil;
-import com.ombremoon.sentinellib.api.Easing;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.ISentinel;
 import com.ombremoon.sentinellib.networking.ModNetworking;
@@ -25,13 +24,13 @@ import java.util.List;
 public class BoxInstance {
     private final SentinelBox sentinelBox;
     private final LivingEntity boxOwner;
+    private boolean start = false;
     private boolean isActive;
     public int tickCount = 0;
     private Vec3 centerVec;
     protected Vec3[] instanceVertices;
     protected Vec3[] instanceNormals;
     public final List<LivingEntity> hurtEntities = new ObjectArrayList<>();
-
 
     public BoxInstance(@Nullable SentinelBox sentinelBox, LivingEntity boxOwner) {
         this.sentinelBox = sentinelBox;
@@ -95,6 +94,9 @@ public class BoxInstance {
             return;
         }
 
+        if (this.sentinelBox.getStopPredicate().test(this.boxOwner))
+            this.deactivateBox();
+
         if (this.boxOwner.level().isClientSide) {
             var rotation = sentinelBox.getProperRotation(this.boxOwner);
             float f0 = rotation.getFirst();
@@ -104,7 +106,7 @@ public class BoxInstance {
         }
 
         int duration = this.sentinelBox.getDuration();
-        if (this.tickCount <= duration) {
+        if (!this.sentinelBox.hasDuration() || this.tickCount <= duration) {
             Matrix4f matrix4f = this.sentinelBox.getMoverType().isDynamic() ? MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F) : MatrixHelper.getEntityMatrix(this.boxOwner, 1.0F);
 
             this.updatePositionAndRotation(matrix4f);
@@ -112,12 +114,14 @@ public class BoxInstance {
             if (this.sentinelBox.getActiveDuration().test(this.boxOwner, this.tickCount)) {
                 this.isActive = true;
                 this.checkEntityInside(this.boxOwner);
+                this.sentinelBox.onActiveTick().accept(this.boxOwner);
             } else {
                 this.isActive = false;
             }
         } else {
             this.deactivateBox();
         }
+        this.sentinelBox.onBoxTick().accept(this.boxOwner);
     }
 
     /**
@@ -131,10 +135,11 @@ public class BoxInstance {
                 LivingEntity livingEntity = (LivingEntity) entity;
                 if (sentinelBox.getAttackCondition().test(livingEntity)) {
                     if (!this.hurtEntities.contains(livingEntity)) {
-                        sentinelBox.getAttackConsumer().accept(this.boxOwner, livingEntity);
                         ResourceKey<DamageType> damageType = sentinelBox.getDamageType();
-                        if (damageType != null)
+                        if (damageType != null) {
                             livingEntity.hurt(BoxUtil.sentinelDamageSource(livingEntity.level(), damageType, owner), sentinelBox.getDamageAmount());
+                            sentinelBox.onHurtTick().accept(this.boxOwner, livingEntity);
+                        }
 
                         this.hurtEntities.add(livingEntity);
                     }
@@ -148,6 +153,7 @@ public class BoxInstance {
      * Deactivates the box instance and removes it from the Sentinel's {@link BoxInstanceManager}.
      */
     public void deactivateBox() {
+        this.sentinelBox.onBoxStop().accept(this.boxOwner);
         ((ISentinel)this.boxOwner).getBoxManager().removeInstance(this);
     }
 

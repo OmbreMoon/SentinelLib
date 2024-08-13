@@ -1,7 +1,7 @@
 package com.ombremoon.sentinellib.api;
 
-import com.ombremoon.sentinellib.common.IPlayerSentinel;
 import com.ombremoon.sentinellib.api.box.SentinelBox;
+import com.ombremoon.sentinellib.common.IPlayerSentinel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageSource;
