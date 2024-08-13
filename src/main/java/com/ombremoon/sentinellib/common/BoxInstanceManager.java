@@ -14,8 +14,6 @@ import java.util.List;
 public class BoxInstanceManager {
     private final List<BoxInstance> instances = new ObjectArrayList<>();
     private final ISentinel sentinel;
-    private float boxRot;
-    private float boxRot0;
 
     public BoxInstanceManager(ISentinel sentinel) {
         this.sentinel = sentinel;
@@ -36,7 +34,7 @@ public class BoxInstanceManager {
         var rotation = sentinelBox.getProperRotation(entity);
         float f0 = rotation.getFirst();
         float f1 = rotation.getSecond();
-        this.setBoxRotation(f0, f1);
+        instance.setBoxRotation(f0, f1);
         sentinelBox.onBoxTrigger().accept(entity);
         return true;
     }
@@ -64,17 +62,13 @@ public class BoxInstanceManager {
         return false;
     }
 
-    public void setBoxRotation(float boxRot, float boxRot0) {
-        this.boxRot = boxRot;
-        this.boxRot0 = boxRot0;
-    }
-
-    public float getBoxRot() {
-        return this.boxRot;
-    }
-
-    public float getBoxRot0() {
-        return this.boxRot0;
+    public BoxInstance getBoxInstance(String boxID) {
+        for (BoxInstance instance : this.instances) {
+            if (instance.getSentinelBox().getName().equalsIgnoreCase(boxID)) {
+                return instance;
+            }
+        }
+        return null;
     }
 
     /**

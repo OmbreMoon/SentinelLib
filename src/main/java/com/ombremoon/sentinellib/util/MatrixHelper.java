@@ -34,11 +34,11 @@ public class MatrixHelper {
      * @param partialTicks The time between ticks
      * @return A 4x4 matrix translated and rotated to an entity's position
      */
-    public static Matrix4f getEntityMatrix(LivingEntity owner, float partialTicks) {
+    public static Matrix4f getEntityMatrix(LivingEntity owner, BoxInstance instance, float partialTicks) {
         Matrix4f matrix4f = new Matrix4f();
         Vec3 pos = owner.position();
         Matrix4f centerMatrix = new Matrix4f().translate((float) -pos.x, (float) pos.y, (float) -pos.z);
-        matrix4f.mulLocal(centerMatrix.mul0(MatrixHelper.getEntityRotation(owner, partialTicks)));
+        matrix4f.mulLocal(centerMatrix.mul0(MatrixHelper.getEntityRotation(owner, instance, partialTicks)));
         return matrix4f;
     }
 
@@ -47,7 +47,7 @@ public class MatrixHelper {
         Vec3 pos = owner.position();
         Matrix4f matrix4f = new Matrix4f();
         Matrix4f centerMatrix = new Matrix4f().translate((float) -pos.x, (float) pos.y, (float) -pos.z);
-        matrix4f.mulLocal(centerMatrix.mul0(MatrixHelper.getEntityRotation(owner, partialTicks)));
+        matrix4f.mulLocal(centerMatrix.mul0(MatrixHelper.getEntityRotation(owner, instance, partialTicks)));
         Vec3 path = box.getBoxPath(instance, partialTicks);
         matrix4f.translate((float) -path.x, (float) path.y, (float) -path.z);
         return matrix4f;
@@ -59,10 +59,9 @@ public class MatrixHelper {
      * @param partialTicks The time between ticks
      * @return An identity 4x4 matrix that has been rotated on the y-axis
      */
-    private static Matrix4f getEntityRotation(LivingEntity livingEntity, float partialTicks) {
-        ISentinel sentinel = (ISentinel) livingEntity;
-        float yRot = livingEntity.level().isClientSide ? sentinel.getBoxManager().getBoxRot() : -sentinel.getBoxManager().getBoxRot();/*livingEntity.level().isClientSide ? livingEntity.yHeadRot : -livingEntity.getYHeadRot()*/
-        float yRot0 = livingEntity.level().isClientSide ? sentinel.getBoxManager().getBoxRot0() : -sentinel.getBoxManager().getBoxRot0();/*livingEntity.level().isClientSide ? livingEntity.yHeadRotO : -livingEntity.getYHeadRot()*/;
+    private static Matrix4f getEntityRotation(LivingEntity livingEntity, BoxInstance instance, float partialTicks) {
+        float yRot = livingEntity.level().isClientSide ? instance.getBoxRot() : -instance.getBoxRot();
+        float yRot0 = livingEntity.level().isClientSide ? instance.getBoxRot0() : -instance.getBoxRot0();
 
         Matrix4f matrix4f = new Matrix4f();
         float yawAmount = Mth.clampedLerp(yRot0, yRot, partialTicks);

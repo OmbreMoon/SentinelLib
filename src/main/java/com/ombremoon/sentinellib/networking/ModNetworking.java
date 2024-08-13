@@ -18,8 +18,8 @@ public class ModNetworking {
         sendToClients(new ClientboundRemoveSentinelBox(entityID, boxID));
     }
 
-    public static void syncRotation(int entityID, float rot, float rot0) {
-        sendToServer(new ServerboundSyncRotation(entityID, rot, rot0));
+    public static void syncRotation(int entityID, String boxId, float rot, float rot0) {
+        sendToServer(new ServerboundSyncRotation(entityID, boxId, rot, rot0));
     }
 
     public static void registerPackets() {

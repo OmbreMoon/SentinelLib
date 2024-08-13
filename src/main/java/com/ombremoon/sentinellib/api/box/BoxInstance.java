@@ -103,13 +103,13 @@ public class BoxInstance {
             var rotation = sentinelBox.getProperRotation(this.boxOwner);
             float f0 = rotation.getFirst();
             float f1 = rotation.getSecond();
-            ((ISentinel)this.boxOwner).getBoxManager().setBoxRotation(f0, f1);
-            ModNetworking.syncRotation(this.boxOwner.getId(), f0, f1);
+            this.setBoxRotation(f0, f1);
+            ModNetworking.syncRotation(this.boxOwner.getId(), this.sentinelBox.getName(), f0, f1);
         }
 
         int duration = this.sentinelBox.getDuration();
         if (!this.sentinelBox.hasDuration() || this.tickCount <= duration) {
-            Matrix4f matrix4f = this.sentinelBox.getMoverType().isDynamic() ? MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F) : MatrixHelper.getEntityMatrix(this.boxOwner, 1.0F);
+            Matrix4f matrix4f = this.sentinelBox.getMoverType().isDynamic() ? MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F) : MatrixHelper.getEntityMatrix(this.boxOwner, this, 1.0F);
 
             this.updatePositionAndRotation(matrix4f);
 
@@ -176,6 +176,19 @@ public class BoxInstance {
         }
 
         this.centerVec = MatrixHelper.transform(matrix4f, this.sentinelBox.getBoxOffset().multiply(-1.0F, 1.0F, -1.0F));
+    }
+
+    public void setBoxRotation(float boxRot, float boxRot0) {
+        this.yRot = boxRot;
+        this.yRot0 = boxRot0;
+    }
+
+    public float getBoxRot() {
+        return this.yRot;
+    }
+
+    public float getBoxRot0() {
+        return this.yRot0;
     }
 
     @Override

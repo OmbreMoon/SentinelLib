@@ -11,23 +11,27 @@ import java.util.function.Supplier;
 
 public class ServerboundSyncRotation {
     private final int entityID;
+    private final String boxID;
     private final float yRot;
     private final float yRot0;
 
-    public ServerboundSyncRotation(int entityID, float yRot, float yRot0) {
+    public ServerboundSyncRotation(int entityID, String boxID, float yRot, float yRot0) {
         this.entityID = entityID;
+        this.boxID = boxID;
         this.yRot = yRot;
         this.yRot0 = yRot0;
     }
 
     public ServerboundSyncRotation(final FriendlyByteBuf buf) {
         this.entityID = buf.readInt();
+        this.boxID = buf.readUtf();
         this.yRot = buf.readFloat();
         this.yRot0 = buf.readFloat();
     }
 
     public void encode(final FriendlyByteBuf buf) {
         buf.writeInt(this.entityID);
+        buf.writeUtf(this.boxID);
         buf.writeFloat(this.yRot);
         buf.writeFloat(this.yRot0);
     }
@@ -44,7 +48,8 @@ public class ServerboundSyncRotation {
                     return;
 
                 if (entity instanceof ISentinel sentinel) {
-                    sentinel.getBoxManager().setBoxRotation(packet.yRot, packet.yRot0);
+                    var instance = sentinel.getBoxManager().getBoxInstance(packet.boxID);
+                    instance.setBoxRotation(packet.yRot, packet.yRot0);
                 }
             }
         });
