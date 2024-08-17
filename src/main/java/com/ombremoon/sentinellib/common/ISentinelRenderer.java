@@ -2,10 +2,12 @@ package com.ombremoon.sentinellib.common;
 
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
+import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.model.GeoModel;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ISentinelRenderer<T extends Entity & GeoAnimatable & ISentinel> {
 
@@ -13,9 +15,11 @@ public interface ISentinelRenderer<T extends Entity & GeoAnimatable & ISentinel>
 
     List<String> getSentinelBones();
 
-    default void registerSentinelModel(GeoModel<T> model) {
+    default void trackSentinelModel(GeoModel<T> model) {
         for (String name : getSentinelBones()) {
-            model.getBone(name).ifPresent(bone -> {
+            Optional<GeoBone> optional = model.getBone(name);
+            if (optional.isPresent()) {
+                GeoBone bone = optional.get();
                 var spaceMatrix = bone.getWorldSpaceMatrix();
                 float m00 = spaceMatrix.m00();
                 float m01 = spaceMatrix.m01();
@@ -35,7 +39,7 @@ public interface ISentinelRenderer<T extends Entity & GeoAnimatable & ISentinel>
                 float m33 = spaceMatrix.m33();
                 Matrix4f matrix = new Matrix4f(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
                 getSentinel().getBoxManager().addBoneMatrix(bone, matrix);
-            });
+            }
         }
     }
 }

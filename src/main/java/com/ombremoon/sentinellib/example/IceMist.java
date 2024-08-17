@@ -5,6 +5,7 @@ import com.ombremoon.sentinellib.SentinelLib;
 import com.ombremoon.sentinellib.api.box.SentinelBox;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.ISentinel;
+import com.ombremoon.sentinellib.compat.GeoBoneOBBSentinelBox;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +31,10 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
     private LivingEntity owner;
     @Nullable
     private UUID ownerUUID;
+
+/*    public static final GeoBoneOBBSentinelBox CENTER = GeoBoneOBBSentinelBox.Builder.of("mist_center")
+            .sizeAndOffset(0.3125F)
+            .n*/
 
     public IceMist(EntityType<?> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
@@ -103,7 +108,7 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
         }
 
         if (this.level().isClientSide) {
-            getBoxManager().getBoneMatrix().forEach((bone, matrix4f) -> Constants.LOG.info(String.valueOf(matrix4f.m30())));
+            getBoxManager().getBoneMatrix().forEach((bone, matrix4f) -> Constants.LOG.info(String.valueOf(bone.getName())));
         }
     }
 

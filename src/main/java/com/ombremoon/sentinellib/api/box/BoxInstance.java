@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * This class responsible for handling the instance-specific information of the {@link SentinelBox}, which includes its position in space, as well as the box's attack conditions and/or other functionalities.
+ * This class responsible for handling the instance-specific information of the {@link SentinelBox}, which includes its position in space, as well as the box's attack conditions, duration, and/or other functionalities.
  */
 public class BoxInstance {
     private final SentinelBox sentinelBox;
@@ -111,7 +111,7 @@ public class BoxInstance {
 
         int duration = this.sentinelBox.getDuration();
         if (!this.sentinelBox.hasDuration() || this.tickCount <= duration) {
-            Matrix4f matrix4f = this.sentinelBox.getMoverType().isDynamic() ? MatrixHelper.getTranslatedEntityMatrix(this.boxOwner, this, 1.0F) : MatrixHelper.getEntityMatrix(this.boxOwner, this, 1.0F);
+            Matrix4f matrix4f = MatrixHelper.getMovementMatrix(this.boxOwner, this, 1.0F, this.sentinelBox.getMoverType());
 
             this.updatePositionAndRotation(matrix4f);
 

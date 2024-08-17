@@ -33,11 +33,11 @@ public class OBBSentinelBox extends SentinelBox {
     @Override
     public void renderBox(BoxInstance instance, LivingEntity entity, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, float isRed) {
         MoverType moverType = instance.getSentinelBox().getMoverType();
-        Matrix4f transpose = moverType.isDynamic() ? MatrixHelper.getTranslatedEntityMatrix(entity, instance, partialTicks) : MatrixHelper.getEntityMatrix(entity, instance, partialTicks);
+        Matrix4f transpose = MatrixHelper.getMovementMatrix(entity, instance, partialTicks, moverType);
         poseStack.pushPose();
         poseStack.mulPose(MatrixHelper.quaternion(transpose));
         Matrix4f matrix = poseStack.last().pose();
-        if (moverType.isDynamic()) {
+        if (moverType.isDefined()) {
             Vec3 vec3 = this.getBoxPath(instance, partialTicks);
             matrix.translate((float) vec3.x, (float) vec3.y, (float) vec3.z);
         }

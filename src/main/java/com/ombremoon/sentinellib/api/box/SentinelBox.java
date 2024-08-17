@@ -175,16 +175,17 @@ public abstract class SentinelBox {
         BODY(false),
         CUSTOM(true),
         CUSTOM_HEAD(true),
-        CUSTOM_BODY(true);
+        CUSTOM_BODY(true),
+        BONE(false);
 
-        private final boolean isDynamic;
+        private final boolean isDefined;
 
-        MoverType(boolean isDynamic) {
-            this.isDynamic = isDynamic;
+        MoverType(boolean isDefined) {
+            this.isDefined = isDefined;
         }
 
-        public boolean isDynamic() {
-            return this.isDynamic;
+        public boolean isDefined() {
+            return this.isDefined;
         }
     }
 
