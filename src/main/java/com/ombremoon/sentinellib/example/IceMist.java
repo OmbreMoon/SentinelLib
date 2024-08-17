@@ -32,16 +32,16 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
     @Nullable
     private UUID ownerUUID;
 
-/*    public static final GeoBoneOBBSentinelBox CENTER = GeoBoneOBBSentinelBox.Builder.of("mist_center")
-            .sizeAndOffset(0.3125F)
-            .n*/
+    public static final GeoBoneOBBSentinelBox CENTER = GeoBoneOBBSentinelBox.Builder.of("mist_center")
+            .sizeAndOffset(2.5F)
+            .noDuration(entity -> !entity.isRemoved()).build();
 
     public IceMist(EntityType<?> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
     }
 
     public IceMist(Level pLevel, double pX, double pY, double pZ, LivingEntity iceQueen) {
-        super(SentinelLib.MIST.get(), pLevel);
+        this(SentinelLib.MIST.get(), pLevel);
         this.setOwner(iceQueen);
         this.setPos(pX, pY, pZ);
     }
@@ -53,7 +53,7 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
 
     @Override
     public List<SentinelBox> getSentinelBoxes() {
-        return ObjectArrayList.of();
+        return ObjectArrayList.of(CENTER);
     }
 
     public void setOwner(@Nullable LivingEntity pOwner) {
@@ -107,8 +107,8 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
             this.discard();
         }
 
-        if (this.level().isClientSide) {
-            getBoxManager().getBoneMatrix().forEach((bone, matrix4f) -> Constants.LOG.info(String.valueOf(bone.getName())));
+        if (this.tickCount == 1 && this.level().isClientSide) {
+            triggerSentinelBox(CENTER);
         }
     }
 

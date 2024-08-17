@@ -87,7 +87,7 @@ public class SentinelLib {
         ENTITY_TYPES.register(modEventBus);
         if (CommonClass.isDevEnv()) {
             ITEMS.register("debug", () -> new DebugItem(new Item.Properties()));
-            MIST = ENTITY_TYPES.register("ice_mist", () -> EntityType.Builder.<IceMist>of(IceMist::new, MobCategory.MISC).sized(3, 3).clientTrackingRange(4).build("ice_mist"));
+            MIST = ENTITY_TYPES.register("ice_mist", () -> EntityType.Builder.<IceMist>of(IceMist::new, MobCategory.MISC).sized(0.1F, 0.1F).clientTrackingRange(4).build("ice_mist"));
         }
     }
 
