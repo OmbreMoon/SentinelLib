@@ -2,7 +2,6 @@ package com.ombremoon.sentinellib.api;
 
 import com.ombremoon.sentinellib.api.box.SentinelBox;
 import com.ombremoon.sentinellib.common.IPlayerSentinel;
-import com.ombremoon.sentinellib.common.ISentinel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageSource;
@@ -10,7 +9,6 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import software.bernie.geckolib.model.GeoModel;
 
 public class BoxUtil {
 

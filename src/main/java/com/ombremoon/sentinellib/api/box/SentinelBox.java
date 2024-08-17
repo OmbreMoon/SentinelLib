@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -24,14 +25,14 @@ public abstract class SentinelBox {
     private final Vec3 boxOffset;
     private final boolean hasDuration;
     private final int duration;
-    private final Predicate<LivingEntity> stopPredicate;
+    private final Predicate<Entity> stopPredicate;
     private final BiPredicate<Entity, Integer> activeDuration;
-    private final Predicate<LivingEntity> attackCondition;
-    private final Consumer<LivingEntity> boxStart;
-    private final Consumer<LivingEntity> boxTick;
-    private final Consumer<LivingEntity> boxStop;
-    private final Consumer<LivingEntity> boxActive;
-    private final BiConsumer<LivingEntity, LivingEntity> boxHurt;
+    private final Predicate<Entity> attackCondition;
+    private final Consumer<Entity> boxStart;
+    private final Consumer<Entity> boxTick;
+    private final Consumer<Entity> boxStop;
+    private final Consumer<Entity> boxActive;
+    private final BiConsumer<Entity, LivingEntity> boxHurt;
     private final ResourceKey<DamageType> damageType;
     private final float damageAmount;
     private final MoverType moverType;
@@ -64,9 +65,9 @@ public abstract class SentinelBox {
 
     public abstract AABB getSentinelBB(BoxInstance instance);
 
-    public abstract void renderBox(BoxInstance instance, LivingEntity entity, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, float isRed);
+    public abstract void renderBox(BoxInstance instance, Entity entity, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, float isRed);
 
-    public abstract List<Entity> getEntityCollisions(LivingEntity owner, BoxInstance instance);
+    public abstract List<Entity> getEntityCollisions(Entity owner, BoxInstance instance);
 
     public Vec3 getVertex(int index) {
         return this.vertices[index];
@@ -98,7 +99,7 @@ public abstract class SentinelBox {
         return this.duration;
     }
 
-    public Predicate<LivingEntity> getStopPredicate() {
+    public Predicate<Entity> getStopPredicate() {
         return this.stopPredicate;
     }
 
@@ -106,27 +107,27 @@ public abstract class SentinelBox {
         return this.activeDuration;
     }
 
-    public Predicate<LivingEntity> getAttackCondition() {
+    public Predicate<Entity> getAttackCondition() {
         return this.attackCondition;
     }
 
-    public Consumer<LivingEntity> onBoxTrigger() {
+    public Consumer<Entity> onBoxTrigger() {
         return this.boxStart;
     }
 
-    public Consumer<LivingEntity> onBoxTick() {
+    public Consumer<Entity> onBoxTick() {
         return this.boxTick;
     }
 
-    public Consumer<LivingEntity> onBoxStop() {
+    public Consumer<Entity> onBoxStop() {
         return this.boxStop;
     }
 
-    public Consumer<LivingEntity> onActiveTick() {
+    public Consumer<Entity> onActiveTick() {
         return this.boxActive;
     }
 
-    public BiConsumer<LivingEntity, LivingEntity> onHurtTick() {
+    public BiConsumer<Entity, LivingEntity> onHurtTick() {
         return this.boxHurt;
     }
 
@@ -150,22 +151,27 @@ public abstract class SentinelBox {
         return Vec3.ZERO;
     }
 
-    public Pair<Float, Float> getProperRotation(LivingEntity entity) {
+    public Pair<Float, Float> getProperRotation(Entity entity) {
         float f0;
         float f1;
-        switch (this.moverType) {
-            case BODY, CUSTOM_BODY -> {
-                f0 = entity.yBodyRot;
-                f1 = entity.yBodyRotO;
+        if (entity instanceof LivingEntity livingEntity) {
+            switch (this.moverType) {
+                case BODY, CUSTOM_BODY -> {
+                    f0 = livingEntity.yBodyRot;
+                    f1 = livingEntity.yBodyRotO;
+                }
+                case HEAD, CUSTOM_HEAD -> {
+                    f0 = livingEntity.yHeadRot;
+                    f1 = livingEntity.yHeadRotO;
+                }
+                default -> {
+                    f0 = 0;
+                    f1 = 0;
+                }
             }
-            case HEAD, CUSTOM_HEAD -> {
-                f0 = entity.yHeadRot;
-                f1 = entity.yHeadRotO;
-            }
-            default -> {
-                f0 = 0;
-                f1 = 0;
-            }
+        } else {
+            f0 = entity.getYRot();
+            f1 = entity.yRotO;
         }
         return Pair.of(f0, f1);
     }
@@ -205,14 +211,14 @@ public abstract class SentinelBox {
         protected Vec3 vertexPos;
         protected boolean hasDuration = true;
         protected int duration = 30;
-        protected Predicate<LivingEntity> stopPredicate = livingEntity -> false;
+        protected Predicate<Entity> stopPredicate = livingEntity -> false;
         protected BiPredicate<Entity, Integer> activeDuration = (entity, integer) -> integer % 10 == 0;
-        protected Predicate<LivingEntity> attackCondition = livingEntity -> true;
-        protected Consumer<LivingEntity> boxStart = attacker -> {};
-        protected Consumer<LivingEntity> boxTick = attacker -> {};
-        protected Consumer<LivingEntity> boxStop = attacker -> {};
-        protected Consumer<LivingEntity> boxActive = attacker -> {};
-        protected BiConsumer<LivingEntity, LivingEntity> boxHurt = (attacker, target) -> {};
+        protected Predicate<Entity> attackCondition = livingEntity -> true;
+        protected Consumer<Entity> boxStart = attacker -> {};
+        protected Consumer<Entity> boxTick = attacker -> {};
+        protected Consumer<Entity> boxStop = attacker -> {};
+        protected Consumer<Entity> boxActive = attacker -> {};
+        protected BiConsumer<Entity, LivingEntity> boxHurt = (attacker, target) -> {};
         protected ResourceKey<DamageType> damageType;
         protected float damageAmount;
         protected MoverType moverType = MoverType.HEAD;

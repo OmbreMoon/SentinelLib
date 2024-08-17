@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class BoxInstance {
     private final SentinelBox sentinelBox;
-    private final LivingEntity boxOwner;
+    private final Entity boxOwner;
     private boolean isActive;
     public int tickCount = 0;
     public float yRot;
@@ -35,7 +35,7 @@ public class BoxInstance {
     protected Vec3[] instanceNormals;
     public final List<LivingEntity> hurtEntities = new ObjectArrayList<>();
 
-    public BoxInstance(@Nullable SentinelBox sentinelBox, LivingEntity boxOwner) {
+    public BoxInstance(@Nullable SentinelBox sentinelBox, Entity boxOwner) {
         this.sentinelBox = sentinelBox;
         this.boxOwner = boxOwner;
         this.centerVec = new Vec3(0.0F, 0.0F, 0.0F);
@@ -67,7 +67,7 @@ public class BoxInstance {
      * Returns the owner of the box instance
      * @return The sentinel that triggered the box instance
      */
-    public LivingEntity getBoxOwner() {
+    public Entity getBoxOwner() {
         return this.boxOwner;
     }
 
@@ -133,7 +133,7 @@ public class BoxInstance {
      * Checks to see if there are entities colliding with the sentinel box and performs its tasks if so.<br> This is only called when the box instance is active.
      * @param owner The owner of the box instance (will be ignored in the check)
      */
-    public void checkEntityInside(LivingEntity owner) {
+    public void checkEntityInside(Entity owner) {
         if (!owner.level().isClientSide) {
             List<Entity> entityList = sentinelBox.getEntityCollisions(owner, this);
             for (Entity entity : entityList) {

@@ -4,6 +4,7 @@ import com.ombremoon.sentinellib.api.box.BoxInstance;
 import com.ombremoon.sentinellib.api.box.SentinelBox;
 import com.ombremoon.sentinellib.common.ISentinel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -34,7 +35,7 @@ public class MatrixHelper {
      * @param partialTicks The time between ticks
      * @return A 4x4 matrix translated and rotated to an entity's position
      */
-    public static Matrix4f getEntityMatrix(LivingEntity owner, BoxInstance instance, float partialTicks) {
+    public static Matrix4f getEntityMatrix(Entity owner, BoxInstance instance, float partialTicks) {
         Matrix4f matrix4f = new Matrix4f();
         Vec3 pos = owner.position();
         Matrix4f centerMatrix = new Matrix4f().translate((float) -pos.x, (float) pos.y, (float) -pos.z);
@@ -42,7 +43,7 @@ public class MatrixHelper {
         return matrix4f;
     }
 
-    public static Matrix4f getDynamicEntityMatrix(LivingEntity owner, BoxInstance instance, float partialTicks) {
+    public static Matrix4f getDynamicEntityMatrix(Entity owner, BoxInstance instance, float partialTicks) {
         SentinelBox box = instance.getSentinelBox();
         Vec3 pos = owner.position();
         Matrix4f matrix4f = new Matrix4f();
@@ -59,7 +60,7 @@ public class MatrixHelper {
      * @param partialTicks The time between ticks
      * @return An identity 4x4 matrix that has been rotated on the y-axis
      */
-    private static Matrix4f getEntityRotation(LivingEntity livingEntity, BoxInstance instance, float partialTicks) {
+    private static Matrix4f getEntityRotation(Entity livingEntity, BoxInstance instance, float partialTicks) {
         float yRot = livingEntity.level().isClientSide ? instance.getYRot() : -instance.getYRot();
         float yRot0 = livingEntity.level().isClientSide ? instance.getYRot0() : -instance.getYRot0();
 
@@ -68,7 +69,7 @@ public class MatrixHelper {
         return matrix4f.rotate(yawAmount * Mth.DEG_TO_RAD, new Vector3f(0.0F, 1.0F, 0.0F));
     }
 
-    public static Matrix4f getMovementMatrix(LivingEntity owner, BoxInstance instance, float partialTicks, SentinelBox.MoverType type) {
+    public static Matrix4f getMovementMatrix(Entity owner, BoxInstance instance, float partialTicks, SentinelBox.MoverType type) {
         switch (type) {
             case CUSTOM, CUSTOM_BODY, CUSTOM_HEAD -> {
                 return getDynamicEntityMatrix(owner, instance, partialTicks);
@@ -82,7 +83,7 @@ public class MatrixHelper {
         }
     }
 
-    private static Matrix4f getBoneMatrix(LivingEntity owner, SentinelBox sentinelBox) {
+    private static Matrix4f getBoneMatrix(Entity owner, SentinelBox sentinelBox) {
         ISentinel sentinel = (ISentinel) owner;
         var boneMatrices = sentinel.getBoxManager().getBoneMatrix();
         for (var entry : boneMatrices.entrySet()) {

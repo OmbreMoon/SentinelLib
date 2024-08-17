@@ -5,6 +5,7 @@ import com.ombremoon.sentinellib.api.box.SentinelBox;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.joml.Matrix4f;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -32,7 +33,7 @@ public class BoxInstanceManager {
      * @param entity The sentinel that triggered the box. Used to initialize box rotation
      * @return Whether the manager should add the instance.
      */
-    public boolean addInstance(SentinelBox sentinelBox, LivingEntity entity) {
+    public boolean addInstance(SentinelBox sentinelBox, Entity entity) {
         BoxInstance instance = new BoxInstance(sentinelBox, this.sentinel.getSentinel());
         for (BoxInstance boxInstance : this.instances) {
             if (boxInstance.equals(instance)) return false;

@@ -34,7 +34,7 @@ public interface ISentinel {
      * @param sentinelBox The sentinel box that should be triggered.
      */
     default void triggerSentinelBox(SentinelBox sentinelBox) {
-        LivingEntity entity = getSentinel();
+        Entity entity = getSentinel();
         if (entity.level().isClientSide) {
             getBoxManager().addInstance(sentinelBox, entity);
         } else {
@@ -49,7 +49,7 @@ public interface ISentinel {
      * @param sentinelBox The sentinel box that should be removed from the BoxInstanceManager
      */
     default void removeSentinelInstance(SentinelBox sentinelBox) {
-        LivingEntity entity = getSentinel();
+        Entity entity = getSentinel();
         if (entity.level().isClientSide) {
             getBoxManager().removeInstance(sentinelBox);
         } else {
@@ -85,7 +85,7 @@ public interface ISentinel {
      * Returns a living instance of a sentinel
      * @return The living entity
      */
-    default LivingEntity getSentinel() {
-        return (LivingEntity) this;
+    default Entity getSentinel() {
+        return (Entity) this;
     }
 }

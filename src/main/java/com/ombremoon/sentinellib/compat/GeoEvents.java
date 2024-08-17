@@ -26,16 +26,13 @@ public class GeoEvents {
         Entity entity = event.getEntity();
         Minecraft minecraft = Minecraft.getInstance();
 
-        if (!(entity instanceof LivingEntity livingEntity))
-            return;
-
         if (entity.level() == null)
             return;
 
-        if (minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes() && !minecraft.showOnlyReducedInfo() && livingEntity instanceof ISentinel sentinel) {
+        if (minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes() && !minecraft.showOnlyReducedInfo() && entity instanceof ISentinel sentinel) {
             BoxInstanceManager manager = sentinel.getBoxManager();
             for (BoxInstance instance : manager.getInstances()) {
-                instance.getSentinelBox().renderBox(instance, livingEntity, event.getPoseStack(), event.getBufferSource().getBuffer(RenderType.lines()), event.getPartialTick(), instance.isActive() ? 0.0F : 1.0F);
+                instance.getSentinelBox().renderBox(instance, entity, event.getPoseStack(), event.getBufferSource().getBuffer(RenderType.lines()), event.getPartialTick(), instance.isActive() ? 0.0F : 1.0F);
             }
         }
     }

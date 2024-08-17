@@ -75,7 +75,7 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
          * @param stopPredicate
          * @return The builder
          */
-        public Builder noDuration(Predicate<LivingEntity> stopPredicate) {
+        public Builder noDuration(Predicate<Entity> stopPredicate) {
             this.hasDuration = false;
             this.stopPredicate = stopPredicate;
             return this;
@@ -86,7 +86,7 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
          * @param stopPredicate
          * @return The builder
          */
-        public Builder stopIf(Predicate<LivingEntity> stopPredicate) {
+        public Builder stopIf(Predicate<Entity> stopPredicate) {
             this.stopPredicate = stopPredicate;
             return this;
         }
@@ -106,7 +106,7 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
          * @param attackCondition
          * @return The builder
          */
-        public Builder attackCondition(Predicate<LivingEntity> attackCondition) {
+        public Builder attackCondition(Predicate<Entity> attackCondition) {
             this.attackCondition = attackCondition;
             return this;
         }
@@ -116,7 +116,7 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
          * @param startConsumer
          * @return
          */
-        public Builder onBoxTrigger(Consumer<LivingEntity> startConsumer) {
+        public Builder onBoxTrigger(Consumer<Entity> startConsumer) {
             this.boxStart = startConsumer;
             return this;
         }
@@ -126,7 +126,7 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
          * @param tickConsumer
          * @return
          */
-        public Builder onBoxTick(Consumer<LivingEntity> tickConsumer) {
+        public Builder onBoxTick(Consumer<Entity> tickConsumer) {
             this.boxTick = tickConsumer;
             return this;
         }
@@ -136,7 +136,7 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
          * @param stopConsumer
          * @return
          */
-        public Builder onBoxStop(Consumer<LivingEntity> stopConsumer) {
+        public Builder onBoxStop(Consumer<Entity> stopConsumer) {
             this.boxStop = stopConsumer;
             return this;
         }
@@ -146,7 +146,7 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
          * @param activeConsumer
          * @return
          */
-        public Builder onActiveTick(Consumer<LivingEntity> activeConsumer) {
+        public Builder onActiveTick(Consumer<Entity> activeConsumer) {
             this.boxActive = activeConsumer;
             return this;
         }
@@ -156,7 +156,7 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
          * @param attackConsumer
          * @return
          */
-        public Builder onHurtTick(BiConsumer<LivingEntity, LivingEntity> attackConsumer) {
+        public Builder onHurtTick(BiConsumer<Entity, LivingEntity> attackConsumer) {
             this.boxHurt = attackConsumer;
             return this;
         }
