@@ -8,13 +8,19 @@ import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.IPlayerSentinel;
 import com.ombremoon.sentinellib.common.ISentinel;
 import com.ombremoon.sentinellib.common.event.RegisterPlayerSentinelBoxEvent;
+import com.ombremoon.sentinellib.compat.GeoEvents;
+import com.ombremoon.sentinellib.example.IceMist;
+import com.ombremoon.sentinellib.example.IceMistRenderer;
 import com.ombremoon.sentinellib.networking.ModNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -27,12 +33,18 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import software.bernie.geckolib.event.GeoRenderEvent;
+import net.minecraftforge.registries.RegistryObject;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 @Mod(Constants.MOD_ID)
 @Mod.EventBusSubscriber(modid = Constants.MOD_ID)
 public class SentinelLib {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Constants.MOD_ID);
+    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Constants.MOD_ID);
+
+    public static RegistryObject<EntityType<IceMist>> MIST;
 
     public static final OBBSentinelBox TEST_ELASTIC = OBBSentinelBox.Builder.of("test")
             .sizeAndOffset(0.5F, 0.0F, 1, 1.0F)
@@ -45,16 +57,23 @@ public class SentinelLib {
             .typeDamage(DamageTypes.FREEZE, 15).build();
 
     public static final OBBSentinelBox TEST_CIRCLE = OBBSentinelBox.Builder.of("circle")
-            .sizeAndOffset(0.5F, 0, 1, 0)
+            .sizeAndOffset(0.5F, 0, 0.5F, 0)
             .activeTicks((entity, integer) -> integer > 0)
-            .noDuration(Entity::onGround)
-            .moverType(SentinelBox.MoverType.CUSTOM)
+            .boxDuration(100)
+            .moverType(SentinelBox.MoverType.CUSTOM_HEAD)
             .circleMovement(2.0F, 0.15F)
-            .defineMovement(SentinelBox.MovementAxis.Y_TRANSLATION, (ticks, partialTicks) -> 3 * (float) Math.sin(0.05F * ticks))
+//            .defineMovement(SentinelBox.MovementAxis.X_TRANSLATION, (ticks, partialTicks) -> {
+//                float f0 = Easing.QUART_IN_OUT.easing((float) (13.3F * Math.PI), (float) ticks / 100);
+//                return 2 * (float) Math.sin(0.15F * f0);
+//            })
+//            .defineMovement(SentinelBox.MovementAxis.Z_TRANSLATION, (ticks, partialTicks) -> {
+//                float f0 = Easing.QUART_IN_OUT.easing((float) (13.3F * Math.PI), (float) ticks / 100);
+//                return 2 * (float) Math.cos(0.15F * f0);
+//            })
             .typeDamage(DamageTypes.FREEZE, 15).build();
 
     public static final OBBSentinelBox BEAM_BOX = OBBSentinelBox.Builder.of("beam")
-            .sizeAndOffset(0.3F, 0.3F, 2, 0.0F, 1.7F, 3)
+            .sizeAndOffset(0.3F, 0.3F, 3, 0.0F, 1.7F, 4)
             .boxDuration(100)
             .activeTicks((entity, integer) -> integer > 45 && integer % 10 == 0)
             .typeDamage(DamageTypes.FREEZE, 15).build();
@@ -62,11 +81,13 @@ public class SentinelLib {
     public SentinelLib() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::commonSetup);
-        renderGeckolibSentinelBoxes(modEventBus);
+        renderGeckolibSentinelBoxes();
         MinecraftForge.EVENT_BUS.register(this);
         ITEMS.register(modEventBus);
+        ENTITY_TYPES.register(modEventBus);
         if (CommonClass.isDevEnv()) {
             ITEMS.register("debug", () -> new DebugItem(new Item.Properties()));
+            MIST = ENTITY_TYPES.register("ice_mist", () -> EntityType.Builder.<IceMist>of(IceMist::new, MobCategory.MISC).sized(3, 3).clientTrackingRange(4).build("ice_mist"));
         }
     }
 
@@ -104,27 +125,18 @@ public class SentinelLib {
         event.getSentinelBoxEntry().add(BEAM_BOX);
     }
 
-    private void renderGeckolibSentinelBoxes(IEventBus modEventBus) {
+    private void renderGeckolibSentinelBoxes() {
         if (ModList.get().isLoaded("geckolib")) {
-            modEventBus.addListener(event -> {
-                if (event instanceof GeoRenderEvent.Entity.Post renderEvent) {
-                    Entity entity = renderEvent.getEntity();
-                    Minecraft minecraft = Minecraft.getInstance();
-
-                    if (!(entity instanceof LivingEntity livingEntity))
-                        return;
-
-                    if (entity.level() == null)
-                        return;
-
-                    if (minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes() && !minecraft.showOnlyReducedInfo() && livingEntity instanceof ISentinel sentinel) {
-                        BoxInstanceManager manager = sentinel.getBoxManager();
-                        for (BoxInstance instance : manager.getInstances()) {
-                            instance.getSentinelBox().renderBox(instance, livingEntity, renderEvent.getPoseStack(), renderEvent.getBufferSource().getBuffer(RenderType.lines()), renderEvent.getPartialTick(), instance.isActive() ? 0.0F : 1.0F);
-                        }
-                    }
-                }
-            });
+            MinecraftForge.EVENT_BUS.register(GeoEvents.getInstance());
         }
+    }
+
+    public static <T extends Entity> List<Renderers> getRenderers() {
+        return List.of(
+                new Renderers(SentinelLib.MIST, IceMistRenderer::new)
+        );
+    }
+
+    public record Renderers<T extends Entity>(Supplier<EntityType<T>> type, EntityRendererProvider<T> renderer) {
     }
 }

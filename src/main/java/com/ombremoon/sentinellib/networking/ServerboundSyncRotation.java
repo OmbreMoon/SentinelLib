@@ -49,7 +49,7 @@ public class ServerboundSyncRotation {
 
                 if (entity instanceof ISentinel sentinel) {
                     var instance = sentinel.getBoxManager().getBoxInstance(packet.boxID);
-                    instance.setBoxRotation(packet.yRot, packet.yRot0);
+                    instance.setYRotation(packet.yRot, packet.yRot0);
                 }
             }
         });

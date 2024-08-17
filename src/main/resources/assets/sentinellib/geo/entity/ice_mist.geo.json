@@ -1,0 +1,209 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 4,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "ice_mist",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "vfx",
+					"parent": "ice_mist",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "mist",
+					"parent": "vfx",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "mist_rot1",
+					"parent": "mist",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "mist1",
+					"parent": "mist_rot1",
+					"pivot": [-11, 6, 0],
+					"cubes": [
+						{"origin": [-17, 0, -6], "size": [12, 12, 12], "uv": [36, 60]}
+					]
+				},
+				{
+					"name": "mist_rot4",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, -120, 0]
+				},
+				{
+					"name": "mist4",
+					"parent": "mist_rot4",
+					"pivot": [-11, 6, 0],
+					"cubes": [
+						{"origin": [-17, 0, -6], "size": [12, 12, 12], "uv": [36, 36]}
+					]
+				},
+				{
+					"name": "mist_rot7",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 60, 0]
+				},
+				{
+					"name": "mist7",
+					"parent": "mist_rot7",
+					"pivot": [-11, 6, 0],
+					"rotation": [0, 0, -22.5],
+					"cubes": [
+						{"origin": [-17, 0, -6], "size": [12, 12, 12], "uv": [0, 0]}
+					]
+				},
+				{
+					"name": "mist_rot6",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 120, 0]
+				},
+				{
+					"name": "mist6",
+					"parent": "mist_rot6",
+					"pivot": [-11, 6, 0],
+					"cubes": [
+						{"origin": [-17, 0, -6], "size": [12, 12, 12], "uv": [0, 24]}
+					]
+				},
+				{
+					"name": "mist_rot5",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 180, 0]
+				},
+				{
+					"name": "mist5",
+					"parent": "mist_rot5",
+					"pivot": [-11, 6, 0],
+					"rotation": [0, 0, -22.5],
+					"cubes": [
+						{"origin": [-17, 0, -6], "size": [12, 12, 12], "uv": [36, 12]}
+					]
+				},
+				{
+					"name": "mist_rot3",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, -60, 0]
+				},
+				{
+					"name": "mist3",
+					"parent": "mist_rot3",
+					"pivot": [-11, 6, 0],
+					"rotation": [0, 0, -22.5],
+					"cubes": [
+						{"origin": [-17, 0, -6], "size": [12, 12, 12], "uv": [0, 48]}
+					]
+				},
+				{
+					"name": "mist_rot2",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, -30, 0]
+				},
+				{
+					"name": "mist2",
+					"parent": "mist_rot2",
+					"pivot": [-16, 5, 0],
+					"cubes": [
+						{"origin": [-21, 0, -5], "size": [10, 10, 10], "uv": [0, 94]}
+					]
+				},
+				{
+					"name": "mist_rot8",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, -90, 0]
+				},
+				{
+					"name": "mist8",
+					"parent": "mist_rot8",
+					"pivot": [-16, 5, 0],
+					"cubes": [
+						{"origin": [-21, 0, -5], "size": [10, 10, 10], "uv": [74, 74]}
+					]
+				},
+				{
+					"name": "mist_rot9",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, -150, 0]
+				},
+				{
+					"name": "mist9",
+					"parent": "mist_rot9",
+					"pivot": [-16, 5, 0],
+					"cubes": [
+						{"origin": [-21, 0, -5], "size": [10, 10, 10], "uv": [74, 50]}
+					]
+				},
+				{
+					"name": "mist_rot10",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 150, 0]
+				},
+				{
+					"name": "mist10",
+					"parent": "mist_rot10",
+					"pivot": [-16, 5, 0],
+					"cubes": [
+						{"origin": [-21, 0, -5], "size": [10, 10, 10], "uv": [74, 26]}
+					]
+				},
+				{
+					"name": "mist_rot11",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 90, 0]
+				},
+				{
+					"name": "mist11",
+					"parent": "mist_rot11",
+					"pivot": [-16, 5, 0],
+					"cubes": [
+						{"origin": [-21, 0, -5], "size": [10, 10, 10], "uv": [0, 74]}
+					]
+				},
+				{
+					"name": "mist_rot12",
+					"parent": "mist",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 30, 0]
+				},
+				{
+					"name": "mist12",
+					"parent": "mist_rot12",
+					"pivot": [-16, 5, 0],
+					"cubes": [
+						{"origin": [-21, 0, -5], "size": [10, 10, 10], "uv": [72, 0]}
+					]
+				},
+				{
+					"name": "mist_center",
+					"parent": "mist",
+					"pivot": [0, 5, 0],
+					"cubes": [
+						{"origin": [-5, 0, -5], "size": [10, 10, 10], "uv": [30, 84]}
+					]
+				}
+			]
+		}
+	]
+}

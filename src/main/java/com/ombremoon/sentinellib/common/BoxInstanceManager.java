@@ -2,11 +2,17 @@ package com.ombremoon.sentinellib.common;
 
 import com.ombremoon.sentinellib.api.box.BoxInstance;
 import com.ombremoon.sentinellib.api.box.SentinelBox;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import org.joml.Matrix4f;
+import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.loading.json.raw.Bone;
+import software.bernie.geckolib.model.GeoModel;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class manages the {@link BoxInstance BoxInstances} triggered by a {@link ISentinel Sentinel}.
@@ -14,6 +20,7 @@ import java.util.List;
 public class BoxInstanceManager {
     private final List<BoxInstance> instances = new ObjectArrayList<>();
     private final ISentinel sentinel;
+    private final Map<GeoBone, Matrix4f> modelMatrices = new Object2ObjectOpenHashMap<>();
 
     public BoxInstanceManager(ISentinel sentinel) {
         this.sentinel = sentinel;
@@ -34,7 +41,7 @@ public class BoxInstanceManager {
         var rotation = sentinelBox.getProperRotation(entity);
         float f0 = rotation.getFirst();
         float f1 = rotation.getSecond();
-        instance.setBoxRotation(f0, f1);
+        instance.setYRotation(f0, f1);
         sentinelBox.onBoxTrigger().accept(entity);
         return true;
     }
@@ -77,5 +84,13 @@ public class BoxInstanceManager {
      */
     public List<BoxInstance> getInstances() {
         return this.instances;
+    }
+
+    public void addBoneMatrix(GeoBone bone, Matrix4f matrix4f) {
+        this.modelMatrices.put(bone, matrix4f);
+    }
+
+    public Map<GeoBone, Matrix4f> getBoneMatrix() {
+        return this.modelMatrices;
     }
 }

@@ -24,11 +24,12 @@ import java.util.List;
 public class BoxInstance {
     private final SentinelBox sentinelBox;
     private final LivingEntity boxOwner;
-    private boolean start = false;
     private boolean isActive;
     public int tickCount = 0;
-    private float yRot;
-    private float yRot0;
+    public float yRot;
+    public float yRot0;
+    public float dynamicYRot;
+    public float dynamicYRot0;
     private Vec3 centerVec;
     protected Vec3[] instanceVertices;
     protected Vec3[] instanceNormals;
@@ -91,6 +92,7 @@ public class BoxInstance {
      */
     public void tick() {
         this.tickCount++;
+//        this.dynamicYRot++;
         if (this.boxOwner == null) {
             Constants.LOG.warn("Sentinel box does not have an owner and will not function as intended");
             return;
@@ -103,7 +105,7 @@ public class BoxInstance {
             var rotation = sentinelBox.getProperRotation(this.boxOwner);
             float f0 = rotation.getFirst();
             float f1 = rotation.getSecond();
-            this.setBoxRotation(f0, f1);
+            this.setYRotation(f0, f1);
             ModNetworking.syncRotation(this.boxOwner.getId(), this.sentinelBox.getName(), f0, f1);
         }
 
@@ -124,6 +126,7 @@ public class BoxInstance {
             this.deactivateBox();
         }
         this.sentinelBox.onBoxTick().accept(this.boxOwner);
+//        this.dynamicYRot0 = this.dynamicYRot;
     }
 
     /**
@@ -178,16 +181,16 @@ public class BoxInstance {
         this.centerVec = MatrixHelper.transform(matrix4f, this.sentinelBox.getBoxOffset().multiply(-1.0F, 1.0F, -1.0F));
     }
 
-    public void setBoxRotation(float boxRot, float boxRot0) {
-        this.yRot = boxRot;
-        this.yRot0 = boxRot0;
+    public void setYRotation(float yRot, float yRot0) {
+        this.yRot = yRot;
+        this.yRot0 = yRot0;
     }
 
-    public float getBoxRot() {
+    public float getYRot() {
         return this.yRot;
     }
 
-    public float getBoxRot0() {
+    public float getYRot0() {
         return this.yRot0;
     }
 

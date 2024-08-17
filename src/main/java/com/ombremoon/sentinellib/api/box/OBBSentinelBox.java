@@ -170,21 +170,26 @@ public class OBBSentinelBox extends SentinelBox {
 
         /**
          * Defines the size and offset of the sentinel box.
-         * @param xSize Half of the x size
-         * @param ySize Half of the y size
-         * @param zSize Half of the z size
+         * @param xVertex The x distance from the center of the box to the top right vertex
+         * @param yVertex The y distance from the center of the box to the top right vertex
+         * @param zVertex The z distance from the center of the box to the top right vertex
          * @param xOffset The x offset
          * @param yOffset The y offset
          * @param zOffset The z offset
          * @return The builder
          */
-        public Builder sizeAndOffset(float xSize, float ySize, float zSize, float xOffset, float yOffset, float zOffset) {
-            double xVertex = Math.abs(xSize);
-            double yVertex = Math.abs(ySize);
-            double zVertex = Math.abs(zSize);
-            this.vertexPos = new Vec3(xSize, ySize, zSize);
+        public Builder sizeAndOffset(float xVertex, float yVertex, float zVertex, float xOffset, float yOffset, float zOffset) {
+//            double xSize = Math.abs(xVertex);
+//            double ySize = Math.abs(yVertex);
+//            double zSize = Math.abs(zVertex);
+            double xSize = Math.abs(xVertex) + Math.abs(xOffset);
+            double ySize = Math.abs(yVertex) + Math.abs(yOffset);
+            double zSize = Math.abs(zVertex) + Math.abs(zOffset);
+            double maxLength = Math.max(xSize, Math.max(ySize, zSize));
+            this.vertexPos = new Vec3(xVertex, yVertex, zVertex);
             this.boxOffset = new Vec3(xOffset, yOffset, zOffset);
-            this.aabb = new AABB(xVertex, yVertex, zVertex, -xVertex, -yVertex, -zVertex);
+            this.aabb = new AABB(maxLength, maxLength, maxLength, -maxLength, -maxLength, -maxLength);
+//            this.aabb = new AABB(xSize, ySize, zSize, -xSize, -ySize, -zSize);
             return this;
         }
 
