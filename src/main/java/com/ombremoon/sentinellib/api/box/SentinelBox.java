@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -37,6 +36,8 @@ public abstract class SentinelBox {
     private final float damageAmount;
     private final MoverType moverType;
     private final Int2ObjectOpenHashMap<BiFunction<Integer, Float, Float>> boxMovement;
+    private final Int2ObjectOpenHashMap<Function<Integer, Float>> boxScale;
+    private final ScaleDirection scaleDirection;
     private final Vec3[] vertices;
     private final Vec3[] normals;
 
@@ -59,6 +60,8 @@ public abstract class SentinelBox {
         this.damageAmount = builder.damageAmount;
         this.moverType = builder.moverType;
         this.boxMovement = builder.boxMovement;
+        this.boxScale = builder.boxScale;
+        this.scaleDirection = builder.scaleDirection;
         this.vertices = new Vec3[]{new Vec3(vertexPos.x, vertexPos.y, -vertexPos.z), new Vec3(vertexPos.x, vertexPos.y, vertexPos.z), new Vec3(-vertexPos.x, vertexPos.y, vertexPos.z), new Vec3(-vertexPos.x, vertexPos.y, -vertexPos.z)};
         this.normals = new Vec3[]{new Vec3(1.0F, 0.0F, 0.0F), new Vec3(0.0F, 1.0F, 0.0F), new Vec3(0.0F, 0.0F, -1.0F)};
     }
@@ -147,7 +150,19 @@ public abstract class SentinelBox {
         return this.boxMovement.containsKey(axis.ordinal()) ? this.boxMovement.get(axis.ordinal()) : (ticks, partialTicks) -> 0.0F;
     }
 
+    public Function<Integer, Float> getBoxScale(MovementAxis axis) {
+        return this.boxScale.containsKey(axis.ordinal()) ? this.boxScale.get(axis.ordinal()) : ticks -> 1.0F;
+    }
+
+    public ScaleDirection getScaleDirection() {
+        return this.scaleDirection;
+    }
+
     public Vec3 getBoxPath(BoxInstance instance, float partialTicks) {
+        return Vec3.ZERO;
+    }
+
+    public Vec3 getScaleFactor(BoxInstance instance) {
         return Vec3.ZERO;
     }
 
@@ -204,6 +219,10 @@ public abstract class SentinelBox {
         Z_ROTATION
     }
 
+    public enum ScaleDirection {
+        IN, OUT
+    }
+
     protected static class Builder {
         protected final String name;
         protected AABB aabb;
@@ -223,6 +242,8 @@ public abstract class SentinelBox {
         protected float damageAmount;
         protected MoverType moverType = MoverType.HEAD;
         protected Int2ObjectOpenHashMap<BiFunction<Integer, Float, Float>> boxMovement = new Int2ObjectOpenHashMap<>();
+        protected Int2ObjectOpenHashMap<Function<Integer, Float>> boxScale = new Int2ObjectOpenHashMap<>();
+        protected ScaleDirection scaleDirection = ScaleDirection.OUT;
 
         protected Builder(String name) {
             this.name = name;

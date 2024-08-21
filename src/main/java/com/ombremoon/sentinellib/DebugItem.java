@@ -18,7 +18,7 @@ public class DebugItem extends Item {
         ItemStack itemStack = pPlayer.getItemInHand(pUsedHand);
         if (!pLevel.isClientSide) {
             if (pPlayer.isCrouching()) {
-                BoxUtil.triggerPlayerBox(pPlayer, SentinelLib.BEAM_BOX);
+                BoxUtil.triggerPlayerBox(pPlayer, SentinelLib.TEST_ELASTIC);
             } else {
                 BoxUtil.triggerPlayerBox(pPlayer, SentinelLib.TEST_CIRCLE);
             }

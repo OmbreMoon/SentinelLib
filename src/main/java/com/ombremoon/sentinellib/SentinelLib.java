@@ -47,10 +47,13 @@ public class SentinelLib {
     public static RegistryObject<EntityType<IceMist>> MIST;
 
     public static final OBBSentinelBox TEST_ELASTIC = OBBSentinelBox.Builder.of("test")
-            .sizeAndOffset(0.5F, 0.0F, 1, 1.0F)
+            .sizeAndOffset(1F, 0.0F, 1, 1.0F)
             .activeTicks((entity, integer) -> integer > 0)
             .boxDuration(100)
             .moverType(SentinelBox.MoverType.CUSTOM_HEAD)
+            .scaleOut(SentinelBox.MovementAxis.X_TRANSLATION, ticks -> Easing.QUAD_IN.easing((float) ticks / 100))
+            .scaleOut(SentinelBox.MovementAxis.Y_TRANSLATION, ticks -> Easing.QUAD_IN.easing((float) ticks / 100))
+            .scaleOut(SentinelBox.MovementAxis.Z_TRANSLATION, ticks -> Easing.QUAD_IN.easing((float) ticks / 100))
             .defineMovement(SentinelBox.MovementAxis.Z_TRANSLATION, (ticks, partialTicks) -> {
                 return Easing.BOUNCE_OUT.easing(3.0F, (float) ticks / 100);
             })

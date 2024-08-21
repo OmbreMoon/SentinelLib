@@ -44,6 +44,12 @@ public interface ISentinel {
         }
     }
 
+    default void triggerAllSentinelBoxes() {
+        for (SentinelBox box : getSentinelBoxes()) {
+            triggerSentinelBox(box);
+        }
+    }
+
     /**
      * A kill-switch to end a BoxInstance before its intended duration.
      * @param sentinelBox The sentinel box that should be removed from the BoxInstanceManager

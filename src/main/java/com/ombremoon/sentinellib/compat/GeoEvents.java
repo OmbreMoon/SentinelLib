@@ -40,11 +40,13 @@ public class GeoEvents {
                 }
             }
 
-            if (event.getRenderer() instanceof ISentinelRenderer<?> renderer) {
+            if (event.getRenderer() instanceof ISentinelRenderer<?> renderer)
                 renderer.trackSentinelModel(event.getModel());
-//                var bone = event.getModel().getBone("mist_center").get();
-//                Constants.LOG.info(String.valueOf(bone.getWorldSpaceMatrix().m30()));
 
+            var s = sentinel.getBoxManager().getInstances();
+            for (var m : s) {
+//                Constants.LOG.info(String.valueOf(m.getKey().getWorldPosition().x));
+//                Constants.LOG.info(String.valueOf(m.getCenter()));
             }
         }
     }

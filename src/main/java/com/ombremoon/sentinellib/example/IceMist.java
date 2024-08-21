@@ -34,7 +34,11 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
 
     public static final GeoBoneOBBSentinelBox CENTER = GeoBoneOBBSentinelBox.Builder.of("mist_center")
             .sizeAndOffset(2.5F)
-            .noDuration(entity -> !entity.isRemoved()).build();
+            .noDuration(Entity::isRemoved).build();
+
+    public static final GeoBoneOBBSentinelBox ROT = GeoBoneOBBSentinelBox.Builder.of("mist1")
+            .sizeAndOffset(2.5F)
+            .noDuration(Entity::isRemoved).build();
 
     public IceMist(EntityType<?> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
@@ -53,7 +57,10 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
 
     @Override
     public List<SentinelBox> getSentinelBoxes() {
-        return ObjectArrayList.of(CENTER);
+        return ObjectArrayList.of(
+                CENTER,
+                ROT
+        );
     }
 
     public void setOwner(@Nullable LivingEntity pOwner) {
@@ -93,8 +100,9 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
 
     @Override
     public void tick() {
+        tickBoxes();
+//        this.discard();
         super.tick();
-//        this.refreshDimensions();
         List<Entity> entityList = this.level().getEntities(this.getOwner(), this.getBoundingBox());
         for (Entity entity : entityList) {
             if (entity instanceof LivingEntity livingEntity && this.tickCount % 20 == 0) {
@@ -108,16 +116,10 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
         }
 
         if (this.tickCount == 1 && this.level().isClientSide) {
-            triggerSentinelBox(CENTER);
+            triggerAllSentinelBoxes();
+//            triggerSentinelBox(ROT);
         }
     }
-
-/*    @Override
-    public EntityDimensions getDimensions(Pose pPose) {
-        float width = super.getDimensions(pPose).width;
-        float scaledWidth = this.tickCount < 320 ? width * (0.4F * (1 + this.tickCount / 80.0F)) : width * 2.0F;
-        return super.getDimensions(pPose).scale(scaledWidth, 1.0F);
-    }*/
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {

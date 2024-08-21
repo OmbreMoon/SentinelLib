@@ -168,10 +168,11 @@ public class BoxInstance {
      */
     public void updatePositionAndRotation(Matrix4f matrix4f) {
         Matrix4f correctMatrix = new Matrix4f(matrix4f);
+        Vec3 vec3 = this.sentinelBox.getScaleFactor(this);
         correctMatrix.setTranslation(0.0F, 0.0F, 0.0F);
 
         for (int i = 0; i < this.instanceVertices.length; i++) {
-            this.instanceVertices[i] = MatrixHelper.transform(correctMatrix, sentinelBox.getVertex(i));
+            this.instanceVertices[i] = MatrixHelper.transform(correctMatrix, sentinelBox.getVertex(i).multiply(vec3.x, vec3.y, vec3.z));
         }
 
         for (int i = 0; i < this.instanceNormals.length; i++) {

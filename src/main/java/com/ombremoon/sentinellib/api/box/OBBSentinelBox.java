@@ -2,6 +2,7 @@ package com.ombremoon.sentinellib.api.box;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.ombremoon.sentinellib.api.Easing;
 import com.ombremoon.sentinellib.common.ISentinel;
 import com.ombremoon.sentinellib.util.MatrixHelper;
 import net.minecraft.resources.ResourceKey;
@@ -35,21 +36,33 @@ public class OBBSentinelBox extends SentinelBox {
         MoverType moverType = instance.getSentinelBox().getMoverType();
         Matrix4f transpose = MatrixHelper.getMovementMatrix(entity, instance, partialTicks, moverType);
         poseStack.pushPose();
+        if (moverType == MoverType.BONE) {
+            float x = (float) (transpose.m30() - entity.position().x);
+            float y = (float) (transpose.m31() - entity.position().y);
+            float z = (float) (transpose.m32() - entity.position().z);
+            poseStack.translate(x, y, z);
+        }
+
         poseStack.mulPose(MatrixHelper.quaternion(transpose));
         Matrix4f matrix = poseStack.last().pose();
         if (moverType.isDefined()) {
             Vec3 vec3 = this.getBoxPath(instance, partialTicks);
             matrix.translate((float) vec3.x, (float) vec3.y, (float) vec3.z);
         }
+
         Matrix3f matrix3f = poseStack.last().normal();
         Vec3 vertex = this.getVertexPos();
         Vec3 offset = this.getBoxOffset();
-        float maxX = (float)(offset.x + vertex.x);
-        float maxY = (float)(offset.y + vertex.y);
-        float maxZ = (float)(offset.z + vertex.z);
-        float minX = (float)(offset.x - vertex.x);
-        float minY = (float)(offset.y - vertex.y);
-        float minZ = (float)(offset.z - vertex.z);
+        Vec3 scale = this.getScaleFactor(instance);
+        float xScale = (float) scale.x;
+        float yScale = (float) scale.y;
+        float zScale = (float) scale.z;
+        float maxX = (float)(offset.x + vertex.x * xScale);
+        float maxY = (float)(offset.y + vertex.y * yScale);
+        float maxZ = (float)(offset.z + vertex.z * zScale);
+        float minX = (float)(offset.x - vertex.x * xScale);
+        float minY = (float)(offset.y - vertex.y * yScale);
+        float minZ = (float)(offset.z - vertex.z * zScale);
         vertexConsumer.vertex(matrix, minX, minY, minZ).color(1.0F, isRed, isRed, 1.0F).normal(matrix3f, 1.0F, 0.0F, 0.0F).endVertex();
         vertexConsumer.vertex(matrix, maxX, minY, minZ).color(1.0F, isRed, isRed, 1.0F).normal(matrix3f, 1.0F, 0.0F, 0.0F).endVertex();
         vertexConsumer.vertex(matrix, minX, minY, minZ).color(1.0F, isRed, isRed, 1.0F).normal(matrix3f, 0.0F, 1.0F, 0.0F).endVertex();
@@ -139,6 +152,17 @@ public class OBBSentinelBox extends SentinelBox {
         return new Vec3(xMovement, yMovement, zMovement);
     }
 
+    @Override
+    public Vec3 getScaleFactor(BoxInstance instance) {
+        float xScale = this.getBoxScale(SentinelBox.MovementAxis.X_TRANSLATION).apply(instance.tickCount);
+        float yScale = this.getBoxScale(SentinelBox.MovementAxis.Y_TRANSLATION).apply(instance.tickCount);
+        float zScale = this.getBoxScale(SentinelBox.MovementAxis.Z_TRANSLATION).apply(instance.tickCount);
+        xScale = this.getScaleDirection() == ScaleDirection.OUT ? xScale : (float) (1 - xScale / this.getVertexPos().x);
+        yScale = this.getScaleDirection() == ScaleDirection.OUT ? yScale : (float) (1 - yScale / this.getVertexPos().y);
+        zScale = this.getScaleDirection() == ScaleDirection.OUT ? zScale : (float) (1 - zScale / this.getVertexPos().z);
+        return new Vec3(xScale, yScale, zScale);
+    }
+
     /**
      * Builder pattern for OBB based sentinel boxes
      */
@@ -179,9 +203,6 @@ public class OBBSentinelBox extends SentinelBox {
          * @return The builder
          */
         public Builder sizeAndOffset(float xVertex, float yVertex, float zVertex, float xOffset, float yOffset, float zOffset) {
-//            double xSize = Math.abs(xVertex);
-//            double ySize = Math.abs(yVertex);
-//            double zSize = Math.abs(zVertex);
             double xSize = Math.abs(xVertex) + Math.abs(xOffset);
             double ySize = Math.abs(yVertex) + Math.abs(yOffset);
             double zSize = Math.abs(zVertex) + Math.abs(zOffset);
@@ -189,7 +210,6 @@ public class OBBSentinelBox extends SentinelBox {
             this.vertexPos = new Vec3(xVertex, yVertex, zVertex);
             this.boxOffset = new Vec3(xOffset, yOffset, zOffset);
             this.aabb = new AABB(maxLength, maxLength, maxLength, -maxLength, -maxLength, -maxLength);
-//            this.aabb = new AABB(xSize, ySize, zSize, -xSize, -ySize, -zSize);
             return this;
         }
 
@@ -314,6 +334,20 @@ public class OBBSentinelBox extends SentinelBox {
         public Builder defineMovement(MovementAxis axis, BiFunction<Integer, Float, Float> boxMovement) {
             if (axis.ordinal() > 2) throw new IllegalArgumentException("Axis must be translational");
             this.boxMovement.put(axis.ordinal(), boxMovement);
+            return this;
+        }
+
+        public Builder scaleOut(MovementAxis axis, Function<Integer, Float> boxScale) {
+            if (axis.ordinal() > 2) throw new IllegalArgumentException("Axis must be translational");
+            this.scaleDirection = ScaleDirection.OUT;
+            this.boxScale.put(axis.ordinal(), boxScale);
+            return this;
+        }
+
+        public Builder scaleIn(MovementAxis axis, Function<Integer, Float> boxScale) {
+            if (axis.ordinal() > 2) throw new IllegalArgumentException("Axis must be translational");
+            this.scaleDirection = ScaleDirection.IN;
+            this.boxScale.put(axis.ordinal(), boxScale);
             return this;
         }
 
