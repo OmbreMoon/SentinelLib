@@ -92,7 +92,7 @@ public class BoxInstance {
      */
     public void tick() {
         this.tickCount++;
-//        this.dynamicYRot++;
+        this.dynamicYRot++;
         if (this.boxOwner == null) {
             Constants.LOG.warn("Sentinel box does not have an owner and will not function as intended");
             return;
@@ -126,7 +126,7 @@ public class BoxInstance {
             this.deactivateBox();
         }
         this.sentinelBox.onBoxTick().accept(this.boxOwner);
-//        this.dynamicYRot0 = this.dynamicYRot;
+        this.dynamicYRot0 = this.dynamicYRot;
     }
 
     /**

@@ -47,10 +47,12 @@ public class MatrixHelper {
         SentinelBox box = instance.getSentinelBox();
         Vec3 pos = owner.position();
         Matrix4f matrix4f = new Matrix4f();
+//        Matrix4f rotation = new Matrix4f();
         Matrix4f centerMatrix = new Matrix4f().translate((float) -pos.x, (float) pos.y, (float) -pos.z);
         matrix4f.mulLocal(centerMatrix.mul0(getEntityRotation(owner, instance, partialTicks)));
         Vec3 path = box.getBoxPath(instance, partialTicks);
         matrix4f.translate((float) -path.x, (float) path.y, (float) -path.z);
+//        rotation.mulLocal(matrix4f.mul0(getRotatedEntityMatrix(owner, instance, partialTicks)));
         return matrix4f;
     }
 
@@ -93,9 +95,9 @@ public class MatrixHelper {
         return new Matrix4f();
     }
 
-    public static Matrix4f getRotatedEntityMatrix(LivingEntity livingEntity, BoxInstance instance, float partialTicks) {
-        float yRot = livingEntity.level().isClientSide ? instance.dynamicYRot : -instance.dynamicYRot;
-        float yRot0 = livingEntity.level().isClientSide ? instance.dynamicYRot0 : -instance.dynamicYRot0;
+    public static Matrix4f getRotatedEntityMatrix(Entity entity, BoxInstance instance, float partialTicks) {
+        float yRot = entity.level().isClientSide ? instance.dynamicYRot : -instance.dynamicYRot;
+        float yRot0 = entity.level().isClientSide ? instance.dynamicYRot0 : -instance.dynamicYRot0;
 
         Matrix4f matrix4f = new Matrix4f();
         float yRotation = Mth.clampedLerp(yRot0, yRot, partialTicks);

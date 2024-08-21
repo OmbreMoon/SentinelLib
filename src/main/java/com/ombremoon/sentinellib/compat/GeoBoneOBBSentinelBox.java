@@ -8,10 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.function.*;
 
 public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
     public GeoBoneOBBSentinelBox(Builder builder) {
@@ -170,6 +167,36 @@ public final class GeoBoneOBBSentinelBox extends OBBSentinelBox {
         public Builder typeDamage(ResourceKey<DamageType> damageType, float damageAmount) {
             this.damageType = damageType;
             this.damageAmount = damageAmount;
+            return this;
+        }
+
+        public Builder scaleOut(MovementAxis axis, Function<Integer, Float> boxScale) {
+            if (axis.ordinal() > 2) throw new IllegalArgumentException("Axis must be translational");
+            this.scaleDirection = ScaleDirection.OUT;
+            this.boxScale.put(axis.ordinal(), boxScale);
+            return this;
+        }
+
+        public Builder scaleIn(MovementAxis axis, Function<Integer, Float> boxScale) {
+            if (axis.ordinal() > 2) throw new IllegalArgumentException("Axis must be translational");
+            this.scaleDirection = ScaleDirection.IN;
+            this.boxScale.put(axis.ordinal(), boxScale);
+            return this;
+        }
+
+        public Builder scaleOut(Function<Integer, Float> boxScale) {
+            for (int i = 0; i < 3; i++) {
+                this.scaleDirection = ScaleDirection.OUT;
+                this.boxScale.put(MovementAxis.values()[i].ordinal(), boxScale);
+            }
+            return this;
+        }
+
+        public Builder scaleIn(Function<Integer, Float> boxScale) {
+            for (int i = 0; i < 3; i++) {
+                this.scaleDirection = ScaleDirection.IN;
+                this.boxScale.put(MovementAxis.values()[i].ordinal(), boxScale);
+            }
             return this;
         }
 

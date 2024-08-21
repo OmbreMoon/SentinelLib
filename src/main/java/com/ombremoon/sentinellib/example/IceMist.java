@@ -1,6 +1,5 @@
 package com.ombremoon.sentinellib.example;
 
-import com.ombremoon.sentinellib.Constants;
 import com.ombremoon.sentinellib.SentinelLib;
 import com.ombremoon.sentinellib.api.box.SentinelBox;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
@@ -9,10 +8,12 @@ import com.ombremoon.sentinellib.compat.GeoBoneOBBSentinelBox;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3d;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -34,10 +35,32 @@ public class IceMist extends Entity implements TraceableEntity, GeoEntity, ISent
 
     public static final GeoBoneOBBSentinelBox CENTER = GeoBoneOBBSentinelBox.Builder.of("mist_center")
             .sizeAndOffset(2.5F)
+            .scaleOut(ticks -> {
+                if (ticks < 20) {
+                    return 0.0F;
+                } else if (ticks < 60) {
+                    return 0.125F * ticks / 60.0F;
+                } else if (ticks < 320) {
+                    return (ticks / 320.0F);
+                } else {
+                    return 1.0F;
+                }
+            })
             .noDuration(Entity::isRemoved).build();
 
     public static final GeoBoneOBBSentinelBox ROT = GeoBoneOBBSentinelBox.Builder.of("mist1")
-            .sizeAndOffset(2.5F)
+            .sizeAndOffset(3.0F)
+            .scaleOut(ticks -> {
+                if (ticks < 20) {
+                    return 0.0F;
+                } else if (ticks < 60) {
+                    return 0.125F * ticks / 60.0F;
+                } else if (ticks < 320) {
+                    return (ticks / 320.0F);
+                } else {
+                    return 1.0F;
+                }
+            })
             .noDuration(Entity::isRemoved).build();
 
     public IceMist(EntityType<?> pEntityType, Level pLevel) {
