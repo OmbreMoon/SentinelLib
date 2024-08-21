@@ -1,8 +1,11 @@
 package com.ombremoon.sentinellib.compat;
 
+import com.ombremoon.sentinellib.Constants;
 import com.ombremoon.sentinellib.api.box.BoxInstance;
 import com.ombremoon.sentinellib.common.BoxInstanceManager;
 import com.ombremoon.sentinellib.common.ISentinel;
+import com.ombremoon.sentinellib.common.ISentinelRenderer;
+import com.ombremoon.sentinellib.example.IceMist;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
@@ -29,10 +32,19 @@ public class GeoEvents {
         if (entity.level() == null)
             return;
 
-        if (minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes() && !minecraft.showOnlyReducedInfo() && entity instanceof ISentinel sentinel) {
-            BoxInstanceManager manager = sentinel.getBoxManager();
-            for (BoxInstance instance : manager.getInstances()) {
-                instance.getSentinelBox().renderBox(instance, entity, event.getPoseStack(), event.getBufferSource().getBuffer(RenderType.lines()), event.getPartialTick(), instance.isActive() ? 0.0F : 1.0F);
+        if (entity instanceof ISentinel sentinel) {
+            if (minecraft.getEntityRenderDispatcher().shouldRenderHitBoxes() && !minecraft.showOnlyReducedInfo()) {
+                BoxInstanceManager manager = sentinel.getBoxManager();
+                for (BoxInstance instance : manager.getInstances()) {
+                    instance.getSentinelBox().renderBox(instance, entity, event.getPoseStack(), event.getBufferSource().getBuffer(RenderType.lines()), event.getPartialTick(), instance.isActive() ? 0.0F : 1.0F);
+                }
+            }
+
+            if (event.getRenderer() instanceof ISentinelRenderer<?> renderer) {
+                renderer.trackSentinelModel(event.getModel());
+//                var bone = event.getModel().getBone("mist_center").get();
+//                Constants.LOG.info(String.valueOf(bone.getWorldSpaceMatrix().m30()));
+
             }
         }
     }

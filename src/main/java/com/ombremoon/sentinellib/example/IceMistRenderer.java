@@ -18,11 +18,10 @@ public class IceMistRenderer extends GeoEntityRenderer<IceMist> implements ISent
     @Override
     public void render(IceMist entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
-        trackSentinelModel(this.getGeoModel());
     }
 
     @Override
-    public ISentinel getSentinel() {
+    public IceMist getSentinel() {
         return this.animatable;
     }
 
